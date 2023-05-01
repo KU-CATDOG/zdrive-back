@@ -6,9 +6,12 @@ f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\appsettings.Developmen
 f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\appsettings.json
 f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\zdrive-back.exe
 f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\testhost.exe
-f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\xunit.runner.visualstudio.dotnetcore.testadapter.dll
-f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\xunit.runner.reporters.netcoreapp10.dll
-f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\xunit.runner.utility.netcoreapp10.dll
+f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\NUnit3.TestAdapter.dll
+f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\NUnit3.TestAdapter.pdb
+f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\nunit.engine.dll
+f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\nunit.engine.api.dll
+f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\nunit.engine.core.dll
+f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\testcentric.engine.metadata.dll
 f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\ZDrive-Test.deps.json
 f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\ZDrive-Test.runtimeconfig.json
 f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\ZDrive-Test.dll
@@ -23,10 +26,7 @@ f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\Microsoft.TestPlatform
 f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\Microsoft.VisualStudio.TestPlatform.Common.dll
 f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\Newtonsoft.Json.dll
 f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\NuGet.Frameworks.dll
-f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\xunit.abstractions.dll
-f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\xunit.assert.dll
-f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\xunit.core.dll
-f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\xunit.execution.dotnet.dll
+f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\nunit.framework.dll
 f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\cs\Microsoft.TestPlatform.CoreUtilities.resources.dll
 f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\cs\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
 f:\Git_workspace\zdrive-back\ZDrive-Test\bin\Debug\net7.0\de\Microsoft.TestPlatform.CoreUtilities.resources.dll
