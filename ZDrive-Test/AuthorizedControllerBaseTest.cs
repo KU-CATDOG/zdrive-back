@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Http;
+using Moq;
 using ZDrive.Controllers;
 using ZDrive.Services;
 
@@ -7,19 +8,24 @@ namespace ZDrive_Test;
 
 public class AuthorizedControllerBaseTest
 {
-    private HttpRequest CreateHttpRequest(string? ssid)
-        => new TestHttpRequest(new TestCookieColletion(ssid));
-
     [Test]
     public void CheckSession_ValidCookie_ReturnsUserId()
     {
         // Arrange
         var userId = 1;
-        ISessionStorage session = new TestSessionStorage();
-        session.AddSession(userId, out var ssid);
+        var outUserId = 1;
+        var ssid = Guid.NewGuid();
+        var mockSesson = new Mock<ISessionStorage>();
+        mockSesson.Setup(foo => foo.AddSession(userId, out ssid)).Returns(true);
+        mockSesson.Setup(foo => foo.TryGetUser(ssid, out outUserId)).Returns(true);
+        ISessionStorage session = mockSesson.Object;
+
+        session.AddSession(userId, out var outSsid);
 
         var controller = new AuthorizedControllerBase(session);
-        HttpRequest req = CreateHttpRequest(ssid.ToString());
+        var mockHttpRequest = new Mock<HttpRequest>();
+        mockHttpRequest.Setup(foo => foo.Cookies["sessionId"]).Returns(ssid.ToString());
+        HttpRequest req = mockHttpRequest.Object;
 
         // Act
         var ret = controller.CheckSession(req, out var id);
@@ -34,11 +40,19 @@ public class AuthorizedControllerBaseTest
     {
         // Arrange
         var userId = 1;
-        ISessionStorage session = new TestSessionStorage();
-        session.AddSession(userId, out var ssid);
+        var outUserId = 1;
+        var ssid = Guid.NewGuid();
+        var mockSesson = new Mock<ISessionStorage>();
+        mockSesson.Setup(foo => foo.AddSession(userId, out ssid)).Returns(true);
+        mockSesson.Setup(foo => foo.TryGetUser(ssid, out outUserId)).Returns(true);
+        ISessionStorage session = mockSesson.Object;
+
+        session.AddSession(userId, out var outSsid);
 
         var controller = new AuthorizedControllerBase(session);
-        HttpRequest req = CreateHttpRequest(null);
+        var mockHttpRequest = new Mock<HttpRequest>();
+        mockHttpRequest.Setup(foo => foo.Cookies["sessionId"]).Returns(() => null);
+        HttpRequest req = mockHttpRequest.Object;
 
         // Act
         var ret = controller.CheckSession(req, out var id);
@@ -53,11 +67,19 @@ public class AuthorizedControllerBaseTest
     {
         // Arrange
         var userId = 1;
-        ISessionStorage session = new TestSessionStorage();
-        session.AddSession(userId, out var ssid);
+        var outUserId = 1;
+        var ssid = Guid.NewGuid();
+        var mockSesson = new Mock<ISessionStorage>();
+        mockSesson.Setup(foo => foo.AddSession(userId, out ssid)).Returns(true);
+        mockSesson.Setup(foo => foo.TryGetUser(ssid, out outUserId)).Returns(true);
+        ISessionStorage session = mockSesson.Object;
+
+        session.AddSession(userId, out var outSsid);
 
         var controller = new AuthorizedControllerBase(session);
-        HttpRequest req = CreateHttpRequest("Invalid_SSID");
+        var mockHttpRequest = new Mock<HttpRequest>();
+        mockHttpRequest.Setup(foo => foo.Cookies["sessionId"]).Returns(() => "Invalid Cookie");
+        HttpRequest req = mockHttpRequest.Object;
 
         // Act
         var ret = controller.CheckSession(req, out var id);
@@ -72,11 +94,19 @@ public class AuthorizedControllerBaseTest
     {
         // Arrange
         var userId = 1;
-        ISessionStorage session = new TestSessionStorage();
-        session.AddSession(userId, out var ssid);
+        var outUserId = 1;
+        var ssid = Guid.NewGuid();
+        var mockSesson = new Mock<ISessionStorage>();
+        mockSesson.Setup(foo => foo.AddSession(userId, out ssid)).Returns(true);
+        mockSesson.Setup(foo => foo.TryGetUser(ssid, out outUserId)).Returns(true);
+        ISessionStorage session = mockSesson.Object;
+
+        session.AddSession(userId, out var outSsid);
 
         var controller = new AuthorizedControllerBase(session);
-        HttpRequest req = CreateHttpRequest(Guid.NewGuid().ToString());
+        var mockHttpRequest = new Mock<HttpRequest>();
+        mockHttpRequest.Setup(foo => foo.Cookies["sessionId"]).Returns(Guid.NewGuid().ToString());
+        HttpRequest req = mockHttpRequest.Object;
 
         // Act
         var ret = controller.CheckSession(req, out var id);
@@ -84,34 +114,5 @@ public class AuthorizedControllerBaseTest
         // Assert
         Assert.AreEqual(Results.Unauthorized(), ret);
         Assert.AreEqual(default(int), id);
-    }
-
-    private class TestSessionStorage : ISessionStorage
-    {
-        private Dictionary<Guid, Session> _session = new Dictionary<Guid, Session>();
-        public ReadOnlyDictionary<Guid, Session> Session => _session.AsReadOnly();
-
-        public bool AddSession(int userId, out Guid ssid)
-        {
-            Guid guid = Guid.NewGuid();
-            ssid = guid;
-            _session[guid] = new Session(userId, DateTime.Now);
-            return true;
-        }
-
-        public bool AddSession(int userId, DateTime dateTime, out Guid ssid1) { throw new NotImplementedException(); }
-        public void RemoveUser(Guid guid) { throw new NotImplementedException(); }
-
-        public bool TryGetUser(Guid guid, out int userId)
-        {
-            userId = default;
-
-            if (_session.TryGetValue(guid, out var value))
-            {
-                userId = value.Id;
-                return true;
-            }
-            else return false;
-        }
     }
 }
