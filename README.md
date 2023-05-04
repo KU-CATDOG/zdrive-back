@@ -1,25 +1,75 @@
-# zdrive-back
-캣독 프로젝트 관리 웹 프로젝트 백엔드
+# ZDrive-Back
 
-SessionStorage 구현해야 할 것??
-    세션 추가
-    SSID로 세션 확인
-    세션 만료되면 없어지게
-    세션 수동 제거
+캣독 프로젝트 관리 및 웹 프로젝트 백앤드
 
-세션엔?
-    유저 DB 기본키
-    SSID
-    만료 시간
+---
 
-Unit Test?
-    새로운 유저가 들어오면 세션 추가해야함(true 리턴하고 SSID out)
-    이미 세션에 있는 유저가 들어오면 세션 추가 메소드가 실패해야함(false 리턴)
-    기존 유저를 확인 전 만료된 세션을 제거해야함
+## Purposes
 
-    받은 SSID가 세션에 있을 경우 유저 DB 기본키를 리턴해야함
-    받은 SSID가 세션에 없을 경우 null을 리턴해야함
-    받은 SSID가 만료된 경우 null을 리턴해야함
+프로젝트의 보관 (포폴용, 포스트모템)
+과거플젝의 구경 -> 홍보에도 쓸수있고
+일정관리툴도 포함? 마일스톤 단위로
 
-    SSID가 있을 경우 그 세션을 제거함
-    SSID가 없을 경우 Exception 발생
+---
+
+## Features
+
+로그인창
+메인화면
+프로젝트 관리, 열람 (인원, 게임개요, 스크린샷)
+(프로젝트 진행도 관리 (목표날짜 퍼센트 목표 등))
+관리창 (회원가입 승인, 글삭제 등)
+
+사용자
+ID 비밀번호 이름 전화번호 학번 이메일 권한정도(일반사용자, 관리자) passwordsalt
+
+프로젝트
+이름 진행시기 인원수(인원 리스트) 소개문 스크린샷 현재퍼센트 진행상태
+
+진행도
+프로젝트ID 진행퍼센트 진행목표글 목표날짜
+
+---
+
+### API List
+
+- /auth
+    - /auth/login
+        - POST Action
+        - 아이디 비밀번호 받아서 로그인 진행
+    - /auth/logout
+        - GET Action, Authorized
+        - 세션 쿠키 삭제
+    - /auth/register
+        - POST Action
+        - 아이디 비밀번호 학번 받아서 회원가입 진행
+    - /auth/remove
+        - POST Action
+        - 아이디 비밀번호 받아서 DB에서 해당 회원 제거
+    - /auth/recover
+        - POST Action, Administer Role required
+        - 아이디 학번 받아서 비밀번호 password로 초기화
+- /project
+- /manage
+
+---
+
+## DB Scheme
+
+### User
+
+| Id | Name | Email | PasswordHash | Salt | IsVerified | Authority |
+| --- | --- | --- | --- | --- | --- | --- |
+| 고유키 |  |  |  |  |  |  |
+
+### Project
+
+| Id | Name | Description | Images | Members | Progress |
+| --- | --- | --- | --- | --- | --- |
+| 고유키 |  |  |  |  |  |
+
+### Milestone
+
+| Id | Name | Description | Users | IsFinished | DueDate | ProjectId |
+| --- | --- | --- | --- | --- | --- | --- |
+| 고유키 |  |  |  |  |  | 외래키 |
