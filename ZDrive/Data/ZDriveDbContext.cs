@@ -5,7 +5,8 @@ namespace ZDrive.Data;
 
 public class ZDriveDbContext : DbContext
 {
+    public ZDriveDbContext() : base() { }
     public ZDriveDbContext(DbContextOptions<ZDriveDbContext> options) : base(options) { }
 
-    public DbSet<User> Users => Set<User>();
+    public virtual DbSet<User> Users => Set<User>();
 }

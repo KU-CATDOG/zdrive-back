@@ -1,13 +1,15 @@
-using Microsoft.AspNetCore.Mvc;
-using ZDrive.Services;
+namespace ZDrive.Services;
 
-namespace ZDrive.Controllers;
+public interface IAuthorizationManager
+{
+    public IResult CheckSession(HttpRequest request, out int userId);
+}
 
-public class AuthorizedControllerBase : ControllerBase
+public class AuthorizationManager : IAuthorizationManager
 {
     private readonly ISessionStorage _sessionStorage;
 
-    public AuthorizedControllerBase(ISessionStorage sessionStorage)
+    public AuthorizationManager(ISessionStorage sessionStorage)
     {
         _sessionStorage = sessionStorage;
     }
