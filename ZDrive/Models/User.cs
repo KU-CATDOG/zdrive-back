@@ -29,4 +29,6 @@ public class User
     public bool IsVerified { get; set; } = false;
 
     public int Authority { get; set; } = 0;
+
+    public StudentNum StudentNum { get; set; } = null!;
 }

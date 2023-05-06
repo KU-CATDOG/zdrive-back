@@ -297,6 +297,24 @@ public class AuthControllerTest
         Assert.That(ret, Is.EqualTo(Results.NotFound()));
     }
 
+    [Test]
+    public void Recover_ValidStudentNum_ShouldResetPasswordToDefault()
+    {
+        throw new NotImplementedException();
+    }
+
+    [Test]
+    public void Recover_NonStudentNum_ReturnsNotFoundStatusCode()
+    {
+        throw new NotImplementedException();
+    }
+
+    [Test]
+    public void Recover_InsufficientAuthority_ReturnsForbidStatusCode()
+    {
+        throw new NotImplementedException();
+    }
+
     [SetUp]
     public void SetUp()
     {

@@ -36,21 +36,21 @@ ID 비밀번호 이름 전화번호 학번 이메일 권한정도(일반사용�
 - /auth
     - /auth/login
         - POST Action
-        - 아이디 비밀번호 받아서 로그인 진행
+        - 학번 비밀번호 받아서 로그인 진행
     - /auth/logout
         - GET Action, Authorized
         - 세션 쿠키 삭제
     - /auth/register
         - POST Action
-        - 아이디 비밀번호 학번 받아서 회원가입 진행
+        - 학번 비밀번호 학번 받아서 회원가입 진행
     - /auth/remove
         - POST Action
-        - 아이디 비밀번호 받아서 DB에서 해당 회원 제거
+        - 학번 비밀번호 받아서 DB에서 해당 회원 제거
     - /auth/recover
         - POST Action, Administer Role required
-        - 아이디 학번 받아서 비밀번호 password로 초기화
+        - 학번 받아서 비밀번호 password로 초기화
 - /project
-- /manage
+- /admin
 
 ---
 
@@ -58,18 +58,36 @@ ID 비밀번호 이름 전화번호 학번 이메일 권한정도(일반사용�
 
 ### User
 
-| Id | Name | Email | PasswordHash | Salt | IsVerified | Authority |
+| Id | Name | StudentNumber | PasswordHash | Salt | IsVerified | Authority |
 | --- | --- | --- | --- | --- | --- | --- |
 | 고유키 |  |  |  |  |  |  |
 
 ### Project
 
-| Id | Name | Description | Images | Members | Progress |
-| --- | --- | --- | --- | --- | --- |
-| 고유키 |  |  |  |  |  |
+| ProjectId | Name | Description | StartDate | EndDate |
+| --- | --- | --- | --- | --- |
+| 고유키 |  |  |  |  |
 
 ### Milestone
 
-| Id | Name | Description | Users | IsFinished | DueDate | ProjectId |
-| --- | --- | --- | --- | --- | --- | --- |
-| 고유키 |  |  |  |  |  | 외래키 |
+| Id | Name | Description | IsFinished | DueDate | ProjectId |
+| --- | --- | --- | --- | --- | --- |
+| 고유키 |  |  |  |  | 외래키 |
+
+### Image
+
+| ImageSrc | ProjectId |
+| --- | --- |
+|  | 외래키 |
+
+### Member
+
+| StudentNumber | Role | ProjectId |
+| --- | --- | --- |
+|  |  | 외래키 |
+
+### StudentNum
+
+| StudentNumber | Name |
+| --- | --- |
+| 외래키 |  |
