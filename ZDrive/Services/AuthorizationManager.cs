@@ -21,7 +21,8 @@ public class AuthorizationManager : IAuthorizationManager
         var ssid = request.Cookies["sessionId"];
         if (ssid == null) return Results.Unauthorized();
         if (!Guid.TryParse(ssid, out var guid)) return Results.BadRequest();
-        if (!_sessionStorage.TryGetUser(guid, out userId)) return Results.Unauthorized();
+        if (!_sessionStorage.TryGetUser(guid, out var session)) return Results.Unauthorized();
+        userId = session.Id;
 
         return Results.Ok();
     }
@@ -32,7 +33,8 @@ public class AuthorizationManager : IAuthorizationManager
         var ssid = request.Cookies["sessionId"];
         if (ssid == null) return Results.Unauthorized();
         if (!Guid.TryParse(ssid, out var guid)) return Results.BadRequest();
-        if (!_sessionStorage.TryGetUser(guid, out userId)) return Results.Unauthorized();
+        if (!_sessionStorage.TryGetUser(guid, out var session)) return Results.Unauthorized();
+        if (session.Authority < authority) return Results.Forbid();
 
         return Results.Ok();
     }

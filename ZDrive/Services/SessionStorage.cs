@@ -9,23 +9,23 @@ public interface ISessionStorage
     bool AddSession(int userId, out Guid ssid);
     bool AddSession(int userId, int authority, out Guid ssid);
     bool AddSession(int userId, DateTime dateTime, out Guid ssid1);
-    bool TryGetUser(Guid guid, out int userId);
+    bool TryGetUser(Guid guid, out Session session);
     void RemoveUser(Guid guid);
     void RemoveUser(int userId);
 }
 
 public class SessionStorage : ISessionStorage
 {
-    private readonly Dictionary<Guid, Session> session = new Dictionary<Guid, Session>();
+    private readonly Dictionary<Guid, Session> _session = new Dictionary<Guid, Session>();
     private static readonly TimeSpan expires = new TimeSpan(1, 0, 0);
 
-    public ReadOnlyDictionary<Guid, Session> Session => session.AsReadOnly();
+    public ReadOnlyDictionary<Guid, Session> Session => _session.AsReadOnly();
 
     public bool AddSession(int userId, out Guid ssid)
     {
         RemoveExpiredUser();
 
-        foreach (var v in session.Values)
+        foreach (var v in _session.Values)
             if (v.Id == userId)
             {
                 ssid = default;
@@ -33,7 +33,7 @@ public class SessionStorage : ISessionStorage
             }
 
         ssid = Guid.NewGuid();
-        session[ssid] = new Session(userId, DateTime.Now.Add(expires));
+        _session[ssid] = new Session(userId, DateTime.Now.Add(expires));
 
         return true;
     }
@@ -42,7 +42,7 @@ public class SessionStorage : ISessionStorage
     {
         RemoveExpiredUser();
 
-        foreach (var v in session.Values)
+        foreach (var v in _session.Values)
             if (v.Id == userId)
             {
                 ssid = default;
@@ -50,7 +50,7 @@ public class SessionStorage : ISessionStorage
             }
 
         ssid = Guid.NewGuid();
-        session[ssid] = new Session(userId, authority, DateTime.Now.Add(expires));
+        _session[ssid] = new Session(userId, authority, DateTime.Now.Add(expires));
 
         return true;
     }
@@ -59,7 +59,7 @@ public class SessionStorage : ISessionStorage
     {
         RemoveExpiredUser();
 
-        foreach (var v in session.Values)
+        foreach (var v in _session.Values)
             if (v.Id == userId)
             {
                 ssid = default;
@@ -67,38 +67,38 @@ public class SessionStorage : ISessionStorage
             }
 
         ssid = Guid.NewGuid();
-        session[ssid] = new Session(userId, dateTime);
+        _session[ssid] = new Session(userId, dateTime);
 
         return true;
     }
 
     public void RemoveUser(Guid ssid)
     {
-        if (!session.ContainsKey(ssid)) throw new KeyNotFoundException();
-        var ret = session.Remove(ssid);
+        if (!_session.ContainsKey(ssid)) throw new KeyNotFoundException();
+        var ret = _session.Remove(ssid);
     }
 
     public void RemoveUser(int userId)
     {
         var buffer = new List<Guid>();
-        foreach (var kv in session)
+        foreach (var kv in _session)
         {
             if (kv.Value.Id == userId) buffer.Add(kv.Key);
         }
         foreach (var k in buffer)
         {
-            session.Remove(k);
+            _session.Remove(k);
         }
     }
 
-    public bool TryGetUser(Guid ssid, out int userId)
+    public bool TryGetUser(Guid ssid, out Session session)
     {
         RemoveExpiredUser();
-        userId = default;
+        session = default;
 
-        if (session.TryGetValue(ssid, out var value))
+        if (_session.TryGetValue(ssid, out var value))
         {
-            userId = value.Id;
+            session = value;
             return true;
         }
         else return false;
@@ -107,7 +107,7 @@ public class SessionStorage : ISessionStorage
     private void Print()
     {
         Console.WriteLine("Session List:");
-        foreach (var kv in session)
+        foreach (var kv in _session)
         {
             Console.WriteLine($"SSID: {kv.Key.ToString()}, UserId: {kv.Value.Id}, Expires: {kv.Value.Expires}");
         }
@@ -117,14 +117,14 @@ public class SessionStorage : ISessionStorage
     {
         List<Guid> buffer = new List<Guid>();
 
-        foreach (var kv in session)
+        foreach (var kv in _session)
         {
             if (kv.Value.IsExpired()) buffer.Add(kv.Key);
         }
 
         for (int i = buffer.Count - 1; i >= 0; i--)
         {
-            session.Remove(buffer[i]);
+            _session.Remove(buffer[i]);
         }
     }
 }

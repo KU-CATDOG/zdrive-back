@@ -100,8 +100,11 @@ public class AuthorizationManagerTest
     public void CheckSession_InsufficientAuthority_ReturnsForbidStatusCode()
     {
         // Arrange
-        ISessionStorage session = mockSesson.Object;
+        var outSession = new Session(userId, 0, DateTime.Now);
+        mockSesson.Setup(foo => foo.AddSession(userId, 0, out ssid)).Returns(true);
+        mockSesson.Setup(foo => foo.TryGetUser(ssid, out outSession)).Returns(true);
 
+        ISessionStorage session = mockSesson.Object;
         session.AddSession(userId, 0, out var outSsid);
 
         var controller = new AuthorizationManager(session);
@@ -113,7 +116,7 @@ public class AuthorizationManagerTest
         var ret = controller.CheckSession(req, 3, out var id);
 
         // Assert
-        Assert.AreEqual(Results.Forbid(), ret);
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.ForbidHttpResult)));
         Assert.AreEqual(default(int), id);
     }
 
@@ -122,8 +125,9 @@ public class AuthorizationManagerTest
     {
         userId = 1;
         var outUserId = 1;
+        var outSession = new Session(outUserId, DateTime.Now);
         ssid = Guid.NewGuid();
         mockSesson.Setup(foo => foo.AddSession(userId, out ssid)).Returns(true);
-        mockSesson.Setup(foo => foo.TryGetUser(ssid, out outUserId)).Returns(true);
+        mockSesson.Setup(foo => foo.TryGetUser(ssid, out outSession)).Returns(true);
     }
 }
