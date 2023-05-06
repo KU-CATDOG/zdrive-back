@@ -3,6 +3,7 @@ namespace ZDrive.Services;
 public interface IAuthorizationManager
 {
     public IResult CheckSession(HttpRequest request, out int userId);
+    public IResult CheckSession(HttpRequest request, int authority, out int userId);
 }
 
 public class AuthorizationManager : IAuthorizationManager
@@ -15,6 +16,17 @@ public class AuthorizationManager : IAuthorizationManager
     }
 
     public IResult CheckSession(HttpRequest request, out int userId)
+    {
+        userId = default;
+        var ssid = request.Cookies["sessionId"];
+        if (ssid == null) return Results.Unauthorized();
+        if (!Guid.TryParse(ssid, out var guid)) return Results.BadRequest();
+        if (!_sessionStorage.TryGetUser(guid, out userId)) return Results.Unauthorized();
+
+        return Results.Ok();
+    }
+
+    public IResult CheckSession(HttpRequest request, int authority, out int userId)
     {
         userId = default;
         var ssid = request.Cookies["sessionId"];

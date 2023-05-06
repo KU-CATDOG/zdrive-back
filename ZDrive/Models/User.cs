@@ -16,7 +16,6 @@ public class User
 
     [Required]
     [StringLength(10)]
-    [EmailAddress]
     public string StudentNumber { get; set; } = string.Empty;
 
     [Required]

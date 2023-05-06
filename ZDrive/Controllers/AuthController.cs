@@ -34,10 +34,10 @@ public class AuthController : ControllerBase
     [HttpPost]
     public IResult Login(User user)
     {
-        var _user = _context.Users.FirstOrDefault(u => u.Name == user.Name);
+        var _user = _context.Users.FirstOrDefault(u => u.StudentNumber == user.StudentNumber);
         if (_user == null) return Results.NotFound();
         if (!_user.IsVerified) return Results.Forbid();
-        if (GeneratePasswordHash(user.PasswordHash, _user.Salt) != _user.PasswordHash) return Results.Unauthorized();
+        if (GeneratePasswordHash(user.PasswordHash, _user.Salt) != _user.PasswordHash) return Results.NotFound();
 
         _session.AddSession(_user.Id, out var ssid);
 
@@ -70,6 +70,49 @@ public class AuthController : ControllerBase
             Console.WriteLine(e);
             return Results.NotFound();
         }
+    }
+
+    [Route("register")]
+    [HttpPost]
+    public async Task<IResult> Register(Registration reg)
+    {
+        var check = await (from user in _context.Users
+                           where user.StudentNumber == reg.StudentNumber
+                           select user).FirstOrDefaultAsync();
+
+        if (check != null) return Results.Conflict();
+
+        var salt = GenerateToken(32);
+        var newUser = new User
+        {
+            Name = reg.Name,
+            StudentNumber = reg.StudentNumber,
+            PasswordHash = GeneratePasswordHash(reg.Password, salt),
+            Salt = salt
+        };
+
+        await _context.Users.AddAsync(newUser);
+        await _context.SaveChangesAsync();
+
+        return Results.Created($"/auth/register/{newUser.Id}", newUser);
+    }
+
+    [Route("remove")]
+    [HttpDelete]
+    public async Task<IResult> Remove(User user)
+    {
+        var _user = await (from u in _context.Users
+                           where u.StudentNumber == user.StudentNumber
+                           select u).FirstOrDefaultAsync();
+
+        if (_user == null) return Results.NotFound();
+        if (_user.PasswordHash != GeneratePasswordHash(user.PasswordHash, _user.Salt)) return Results.NotFound();
+
+        _session.RemoveUser(_user.Id);
+        _context.Users.Remove(_user);
+        await _context.SaveChangesAsync();
+
+        return Results.Ok();
     }
 
     private string GenerateToken(int size)

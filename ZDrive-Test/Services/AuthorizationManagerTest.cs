@@ -96,6 +96,27 @@ public class AuthorizationManagerTest
         Assert.AreEqual(default(int), id);
     }
 
+    [Test]
+    public void CheckSession_InsufficientAuthority_ReturnsForbidStatusCode()
+    {
+        // Arrange
+        ISessionStorage session = mockSesson.Object;
+
+        session.AddSession(userId, 0, out var outSsid);
+
+        var controller = new AuthorizationManager(session);
+        var mockHttpRequest = new Mock<HttpRequest>();
+        mockHttpRequest.Setup(foo => foo.Cookies["sessionId"]).Returns(outSsid.ToString());
+        HttpRequest req = mockHttpRequest.Object;
+
+        // Act
+        var ret = controller.CheckSession(req, 3, out var id);
+
+        // Assert
+        Assert.AreEqual(Results.Forbid(), ret);
+        Assert.AreEqual(default(int), id);
+    }
+
     [SetUp]
     public void SetUp()
     {

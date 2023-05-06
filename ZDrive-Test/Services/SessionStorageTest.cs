@@ -110,6 +110,21 @@ public class SessionStorageTest
     }
 
     [Test]
+    public void RemoveUser_ExistUserId_RemovesSession()
+    {
+        // Arrange
+        var sessionStorage = CreateSessionStorage();
+        var userId = 1;
+        sessionStorage.AddSession(userId, out var ssid);
+
+        // Act
+        sessionStorage.RemoveUser(userId);
+
+        // Assert
+        Assert.False(sessionStorage.Session.ContainsKey(ssid));
+    }
+
+    [Test]
     public void RemoveUser_EmptySSID_ThrowsException()
     {
         // Arrange

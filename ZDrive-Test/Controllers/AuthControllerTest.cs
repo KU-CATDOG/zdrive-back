@@ -30,7 +30,7 @@ public class AuthControllerTest
     }
 
     [Test]
-    public void Login_ValidNameAndPassword_ReturnsOkStatusCode()
+    public void Login_ValidStudentNumAndPassword_ReturnsOkStatusCode()
     {
         // Arrange
         var dict = new Dictionary<Guid, Session>();
@@ -44,7 +44,7 @@ public class AuthControllerTest
         var controller = CreateAuthController();
         var user = new User
         {
-            Name = "Chaenamul",
+            StudentNumber = "2020320124",
             PasswordHash = "drowssap"
         };
 
@@ -56,30 +56,30 @@ public class AuthControllerTest
     }
 
     [Test]
-    public void Login_IncorrectPassword_ReturnsUnauthorizedStatusCode()
+    public void Login_IncorrectPassword_ReturnsNotFoundStatusCode()
     {
         // Act
         var controller = CreateAuthController();
         var user = new User
         {
-            Name = "Chaenamul",
+            StudentNumber = "2020320124",
             PasswordHash = "naifoewfho23hpqiofhoi23fh"
         };
 
         var ret = controller.Login(user);
 
         // Assert
-        Assert.That(ret, Is.EqualTo(Results.Unauthorized()));
+        Assert.That(ret, Is.EqualTo(Results.NotFound()));
     }
 
     [Test]
-    public void Login_NonExistUser_ReturnsNotFoundStatusCode()
+    public void Login_NonExistStudentNum_ReturnsNotFoundStatusCode()
     {
         // Act
         var controller = CreateAuthController();
         var user = new User
         {
-            Name = "Merseong",
+            StudentNumber = "2021320108",
             PasswordHash = "naifoewfho23hpqiofhoi23fh"
         };
 
@@ -96,7 +96,7 @@ public class AuthControllerTest
         var controller = CreateAuthController();
         var user = new User
         {
-            Name = "Tom",
+            StudentNumber = "2021320003",
             PasswordHash = "naifoewfho23hpqiofhoi23fh"
         };
 
@@ -173,6 +173,130 @@ public class AuthControllerTest
         Assert.That(dict.ContainsKey(ssid), Is.True);
     }
 
+    [Test]
+    public async Task Register_ValidUserInformation_ShouldBeAddedInDB()
+    {
+        // Arrange
+        var list = GetFakeUserList();
+        mockZDriveDbContext.Setup(foo => foo.Users)
+            .ReturnsDbSet(list);
+        mockZDriveDbContext.Setup(foo => foo.Users.AddAsync(It.IsAny<User>(), It.IsAny<System.Threading.CancellationToken>()))
+            .Callback((User user, CancellationToken token) => {list.Add(user);});
+        mockZDriveDbContext.Setup(foo => foo.SaveChangesAsync(default))
+            .Returns(Task.FromResult(1))
+            .Verifiable();
+
+        var studentNumber = "2021320006";
+        var registration = new Registration
+        {
+            Name = "Minjong",
+            StudentNumber = studentNumber,
+            Password = "passdrow",
+        };
+
+        // Act
+        var controller = CreateAuthController();
+        var ret = await controller.Register(registration);
+
+        // Assert
+        mockZDriveDbContext.Verify();
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Created<User>)));
+        Assert.That(list.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
+    }
+
+    [Test]
+    public async Task Register_ExistStudentNumber_ReturnConflictStatusCode()
+    {
+        // Arrange
+        var name = "Merseong";
+        var registration = new Registration
+        {
+            Name = name,
+            StudentNumber = "2021320003",
+            Password = "passdrow",
+        };
+
+        // Act
+        var controller = CreateAuthController();
+        var ret = await controller.Register(registration);
+
+        // Assert
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Conflict)));
+    }
+
+    [Test]
+    public async Task Remove_ValidStudentNumAndPassword_ShouldRemoveUserInDBAndSession()
+    {
+        // Arrange
+        var db = GetFakeUserList();
+        var ssid = Guid.NewGuid();
+        var session = new Dictionary<Guid, Session> { {ssid, new Session(2, DateTime.Now)} };
+
+        mockZDriveDbContext.Setup(x => x.Users)
+            .ReturnsDbSet(db);
+        mockZDriveDbContext.Setup(x => x.Users.Remove(It.IsAny<User>()))
+            .Callback((User user) => {db.Remove(user);});
+        mockZDriveDbContext.Setup(x => x.SaveChangesAsync(default))
+            .Returns(Task.FromResult(1))
+            .Verifiable();
+        mockSessionStorage.Setup(x => x.RemoveUser(2))
+            .Callback(() => {session.Remove(ssid);});
+
+        var user = new User
+        {
+            StudentNumber = "2020320124",
+            PasswordHash = "drowssap"
+        };
+
+        // Act
+        var controller = CreateAuthController();
+        var ret = await controller.Remove(user);
+
+        // Assert
+        mockZDriveDbContext.Verify();
+        Assert.That(ret, Is.EqualTo(Results.Ok()));
+        Assert.That(db.Find(x => x.StudentNumber == user.StudentNumber), Is.Null);
+        Assert.That(session.Count, Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task Remove_NonStudentNum_ReturnsNotFoundStatusCodeAsync()
+    {
+        // Assert
+        var user = new User
+        {
+            StudentNumber = "2023235304",
+            PasswordHash = "drowssap"
+        };
+
+        // Act
+        var controller = CreateAuthController();
+        var ret = await controller.Remove(user);
+
+        // Assert
+        mockZDriveDbContext.Verify();
+        Assert.That(ret, Is.EqualTo(Results.NotFound()));
+    }
+
+    [Test]
+    public async Task Remove_InvalidPassword_ReturnsNotFoundStatusCodeAsync()
+    {
+        // Assert
+        var user = new User
+        {
+            StudentNumber = "2020320124",
+            PasswordHash = "asdasd"
+        };
+
+        // Act
+        var controller = CreateAuthController();
+        var ret = await controller.Remove(user);
+
+        // Assert
+        mockZDriveDbContext.Verify();
+        Assert.That(ret, Is.EqualTo(Results.NotFound()));
+    }
+
     [SetUp]
     public void SetUp()
     {
@@ -194,8 +318,8 @@ public class AuthControllerTest
             new User
             {
                 Id = 1,
-                Name = "Tom",
-                StudentNumber = "2021320006",
+                Name = "Jun",
+                StudentNumber = "2021320003",
                 PasswordHash = "Vut+mCn8wSAlGPmOSA+qfXA6b7/wdpQL2jjFYUcIEMU=",
                 Salt = "realtest",
                 IsVerified = false
