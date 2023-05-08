@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using ZDrive.Models;
 
 namespace ZDrive.Services;
 
@@ -7,7 +8,7 @@ public interface ISessionStorage
     ReadOnlyDictionary<Guid, Session> Session { get; }
 
     bool AddSession(int userId, out Guid ssid);
-    bool AddSession(int userId, int authority, out Guid ssid);
+    bool AddSession(int userId, Authority authority, out Guid ssid);
     bool AddSession(int userId, DateTime dateTime, out Guid ssid1);
     bool TryGetUser(Guid guid, out Session session);
     void RemoveUser(Guid guid);
@@ -38,7 +39,7 @@ public class SessionStorage : ISessionStorage
         return true;
     }
 
-    public bool AddSession(int userId, int authority, out Guid ssid)
+    public bool AddSession(int userId, Authority authority, out Guid ssid)
     {
         RemoveExpiredUser();
 
@@ -133,7 +134,7 @@ public struct Session
 {
     public int Id;
     public DateTime Expires;
-    public int Authority = 0;
+    public Authority Authority = 0;
 
     public Session(int _Id, DateTime _Expires)
     {
@@ -141,7 +142,7 @@ public struct Session
         Expires = _Expires;
     }
 
-    public Session(int _Id, int _Authority, DateTime _Expires)
+    public Session(int _Id, Authority _Authority, DateTime _Expires)
     {
         Id = _Id;
         Expires = _Expires;

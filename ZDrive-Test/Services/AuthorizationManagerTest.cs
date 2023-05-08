@@ -113,7 +113,7 @@ public class AuthorizationManagerTest
         HttpRequest req = mockHttpRequest.Object;
 
         // Act
-        var ret = controller.CheckSession(req, 3, out var id);
+        var ret = controller.CheckSession(req, ZDrive.Models.Authority.Administer, out var id);
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.ForbidHttpResult)));

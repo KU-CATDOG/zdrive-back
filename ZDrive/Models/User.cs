@@ -28,7 +28,14 @@ public class User
 
     public bool IsVerified { get; set; } = false;
 
-    public int Authority { get; set; } = 0;
+    public Authority Authority { get; set; } = Authority.Anonymous;
 
     public StudentNum StudentNum { get; set; } = null!;
+}
+
+public enum Authority
+{
+    Anonymous,
+    User,
+    Administer
 }

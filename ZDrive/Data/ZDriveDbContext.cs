@@ -52,5 +52,19 @@ public class ZDriveDbContext : DbContext
             .HasForeignKey<User>(e => e.StudentNumber)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Member>()
+            .Property(e => e.Role)
+            .HasConversion(
+                v => v.ToString(),
+                v => (Role)Enum.Parse(typeof(Role), v)
+            );
+
+        modelBuilder.Entity<User>()
+            .Property(e => e.Authority)
+            .HasConversion(
+                v => v.ToString(),
+                v => (Authority)Enum.Parse(typeof(Authority), v)
+            );
     }
 }

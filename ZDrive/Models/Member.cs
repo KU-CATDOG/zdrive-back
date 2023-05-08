@@ -11,7 +11,7 @@ public class Member
     public string StudentNumber { get; set; } = string.Empty;
 
     [Required]
-    public int Role { get; set; } = default;
+    public Role Role { get; set; } = default;
 
     [Required]
     public int ProjectId { get; set; } = default;
@@ -19,4 +19,13 @@ public class Member
     public Project Project { get; set; } = null!;
 
     public StudentNum StudentNum { get; set; } = null!;
+}
+
+public enum Role
+{
+    Programmer,
+    GraphicArtist,
+    SoundArtist,
+    GameDesigner,
+    ProjectManager
 }
