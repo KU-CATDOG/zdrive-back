@@ -38,13 +38,12 @@ public class ZDriveDbContext : DbContext
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Member>()
-            .HasOne(e => e.StudentNum)
-            .WithOne(e => e.Member)
-            .HasPrincipalKey<Member>(e => e.StudentNumber)
-            .HasForeignKey<StudentNum>(e => e.StudentNumber)
+        modelBuilder.Entity<StudentNum>()
+            .HasMany(e => e.Members)
+            .WithOne(e => e.StudentNum)
+            .HasForeignKey(e => e.StudentNumber)
             .IsRequired()
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<StudentNum>()
             .HasOne(e => e.User)

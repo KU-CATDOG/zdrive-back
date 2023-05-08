@@ -42,10 +42,10 @@ public class AuthControllerTest
 
         // Act
         var controller = CreateAuthController();
-        var user = new User
+        var user = new Login
         {
             StudentNumber = "2020320124",
-            PasswordHash = "drowssap"
+            Password = "drowssap"
         };
 
         var ret = controller.Login(user);
@@ -60,10 +60,10 @@ public class AuthControllerTest
     {
         // Act
         var controller = CreateAuthController();
-        var user = new User
+        var user = new Login
         {
             StudentNumber = "2020320124",
-            PasswordHash = "naifoewfho23hpqiofhoi23fh"
+            Password = "naifoewfho23hpqiofhoi23fh"
         };
 
         var ret = controller.Login(user);
@@ -77,10 +77,10 @@ public class AuthControllerTest
     {
         // Act
         var controller = CreateAuthController();
-        var user = new User
+        var user = new Login
         {
             StudentNumber = "2021320108",
-            PasswordHash = "naifoewfho23hpqiofhoi23fh"
+            Password = "naifoewfho23hpqiofhoi23fh"
         };
 
         var ret = controller.Login(user);
@@ -94,10 +94,10 @@ public class AuthControllerTest
     {
         // Act
         var controller = CreateAuthController();
-        var user = new User
+        var user = new Login
         {
             StudentNumber = "2021320003",
-            PasswordHash = "naifoewfho23hpqiofhoi23fh"
+            Password = "naifoewfho23hpqiofhoi23fh"
         };
 
         var ret = controller.Login(user);
@@ -177,14 +177,20 @@ public class AuthControllerTest
     public async Task Register_ValidUserInformation_ShouldBeAddedInDB()
     {
         // Arrange
-        var list = GetFakeUserList();
+        var userList = GetFakeUserList();
+        var studentNumberList = new List<StudentNum>();
+
         mockZDriveDbContext.Setup(foo => foo.Users)
-            .ReturnsDbSet(list);
+            .ReturnsDbSet(userList);
         mockZDriveDbContext.Setup(foo => foo.Users.AddAsync(It.IsAny<User>(), It.IsAny<System.Threading.CancellationToken>()))
-            .Callback((User user, CancellationToken token) => {list.Add(user);});
+            .Callback((User user, CancellationToken token) => { userList.Add(user); });
         mockZDriveDbContext.Setup(foo => foo.SaveChangesAsync(default))
             .Returns(Task.FromResult(1))
             .Verifiable();
+        mockZDriveDbContext.Setup(foo => foo.StudentNums)
+            .ReturnsDbSet(studentNumberList);
+        mockZDriveDbContext.Setup(foo => foo.StudentNums.AddAsync(It.IsAny<StudentNum>(), It.IsAny<System.Threading.CancellationToken>()))
+            .Callback((StudentNum studentNum, CancellationToken token) => { studentNumberList.Add(studentNum); });
 
         var studentNumber = "2021320006";
         var registration = new Registration
@@ -201,7 +207,8 @@ public class AuthControllerTest
         // Assert
         mockZDriveDbContext.Verify();
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Created<User>)));
-        Assert.That(list.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
+        Assert.That(studentNumberList.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
+        Assert.That(userList.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
     }
 
     [Test]
@@ -230,22 +237,22 @@ public class AuthControllerTest
         // Arrange
         var db = GetFakeUserList();
         var ssid = Guid.NewGuid();
-        var session = new Dictionary<Guid, Session> { {ssid, new Session(2, DateTime.Now)} };
+        var session = new Dictionary<Guid, Session> { { ssid, new Session(2, DateTime.Now) } };
 
         mockZDriveDbContext.Setup(x => x.Users)
             .ReturnsDbSet(db);
         mockZDriveDbContext.Setup(x => x.Users.Remove(It.IsAny<User>()))
-            .Callback((User user) => {db.Remove(user);});
+            .Callback((User user) => { db.Remove(user); });
         mockZDriveDbContext.Setup(x => x.SaveChangesAsync(default))
             .Returns(Task.FromResult(1))
             .Verifiable();
         mockSessionStorage.Setup(x => x.RemoveUser(2))
-            .Callback(() => {session.Remove(ssid);});
+            .Callback(() => { session.Remove(ssid); });
 
-        var user = new User
+        var user = new Login
         {
             StudentNumber = "2020320124",
-            PasswordHash = "drowssap"
+            Password = "drowssap"
         };
 
         // Act
@@ -263,10 +270,10 @@ public class AuthControllerTest
     public async Task Remove_NonStudentNum_ReturnsNotFoundStatusCodeAsync()
     {
         // Assert
-        var user = new User
+        var user = new Login
         {
             StudentNumber = "2023235304",
-            PasswordHash = "drowssap"
+            Password = "drowssap"
         };
 
         // Act
@@ -282,10 +289,10 @@ public class AuthControllerTest
     public async Task Remove_InvalidPassword_ReturnsNotFoundStatusCodeAsync()
     {
         // Assert
-        var user = new User
+        var user = new Login
         {
             StudentNumber = "2020320124",
-            PasswordHash = "asdasd"
+            Password = "asdasd"
         };
 
         // Act

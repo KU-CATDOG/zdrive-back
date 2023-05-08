@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace ZDrive.Models;
@@ -30,6 +31,7 @@ public class User
 
     public Authority Authority { get; set; } = Authority.Anonymous;
 
+    [JsonIgnore]
     public StudentNum StudentNum { get; set; } = null!;
 }
 

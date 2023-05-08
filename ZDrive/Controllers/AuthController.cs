@@ -32,12 +32,12 @@ public class AuthController : ControllerBase
 
     [Route("login")]
     [HttpPost]
-    public IResult Login(User user)
+    public IResult Login(Login login)
     {
-        var _user = _context.Users.FirstOrDefault(u => u.StudentNumber == user.StudentNumber);
+        var _user = _context.Users.FirstOrDefault(u => u.StudentNumber == login.StudentNumber);
         if (_user == null) return Results.NotFound();
         if (!_user.IsVerified) return Results.Forbid();
-        if (GeneratePasswordHash(user.PasswordHash, _user.Salt) != _user.PasswordHash) return Results.NotFound();
+        if (GeneratePasswordHash(login.Password, _user.Salt) != _user.PasswordHash) return Results.NotFound();
 
         _session.AddSession(_user.Id, out var ssid);
 
@@ -82,6 +82,20 @@ public class AuthController : ControllerBase
 
         if (check != null) return Results.Conflict();
 
+        var checkStudentNum = await (from user in _context.Users
+                           where user.StudentNumber == reg.StudentNumber
+                           select user).FirstOrDefaultAsync();
+
+        if (checkStudentNum == null)
+        {
+            var newStNum = new StudentNum
+            {
+                StudentNumber = reg.StudentNumber,
+                Name = reg.Name
+            };
+            await _context.StudentNums.AddAsync(newStNum);
+        }
+
         var salt = GenerateToken(32);
         var newUser = new User
         {
@@ -99,14 +113,14 @@ public class AuthController : ControllerBase
 
     [Route("remove")]
     [HttpDelete]
-    public async Task<IResult> Remove(User user)
+    public async Task<IResult> Remove(Login login)
     {
         var _user = await (from u in _context.Users
-                           where u.StudentNumber == user.StudentNumber
+                           where u.StudentNumber == login.StudentNumber
                            select u).FirstOrDefaultAsync();
 
         if (_user == null) return Results.NotFound();
-        if (_user.PasswordHash != GeneratePasswordHash(user.PasswordHash, _user.Salt)) return Results.NotFound();
+        if (_user.PasswordHash != GeneratePasswordHash(login.Password, _user.Salt)) return Results.NotFound();
 
         _session.RemoveUser(_user.Id);
         _context.Users.Remove(_user);
