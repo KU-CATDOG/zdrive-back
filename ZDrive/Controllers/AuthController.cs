@@ -32,9 +32,9 @@ public class AuthController : ControllerBase
 
     [Route("login")]
     [HttpPost]
-    public IResult Login(Login login)
+    public async Task<IResult> Login(Login login)
     {
-        var _user = _context.Users.FirstOrDefault(u => u.StudentNumber == login.StudentNumber);
+        var _user = await FindUserByStdNumAsync(login.StudentNumber);
         if (_user == null) return Results.NotFound();
         if (!_user.IsVerified) return Results.Forbid();
         if (GeneratePasswordHash(login.Password, _user.Salt) != _user.PasswordHash) return Results.NotFound();
@@ -76,16 +76,11 @@ public class AuthController : ControllerBase
     [HttpPost]
     public async Task<IResult> Register(Registration reg)
     {
-        var check = await (from user in _context.Users
-                           where user.StudentNumber == reg.StudentNumber
-                           select user).FirstOrDefaultAsync();
+        var checkUser = await FindUserByStdNumAsync(reg.StudentNumber);
+        if (checkUser != null) return Results.Conflict();
 
-        if (check != null) return Results.Conflict();
-
-        var checkStudentNum = await (from user in _context.Users
-                           where user.StudentNumber == reg.StudentNumber
-                           select user).FirstOrDefaultAsync();
-
+        var checkStudentNum = 
+            await _context.StudentNums.FirstOrDefaultAsync(s => s.StudentNumber == reg.StudentNumber);
         if (checkStudentNum == null)
         {
             var newStNum = new StudentNum
@@ -115,12 +110,10 @@ public class AuthController : ControllerBase
     [HttpDelete]
     public async Task<IResult> Remove(Login login)
     {
-        var _user = await (from u in _context.Users
-                           where u.StudentNumber == login.StudentNumber
-                           select u).FirstOrDefaultAsync();
-
+        var _user = await FindUserByStdNumAsync(login.StudentNumber);
         if (_user == null) return Results.NotFound();
-        if (_user.PasswordHash != GeneratePasswordHash(login.Password, _user.Salt)) return Results.NotFound();
+        if (_user.PasswordHash != GeneratePasswordHash(login.Password, _user.Salt)) 
+            return Results.NotFound();
 
         _session.RemoveUser(_user.Id);
         _context.Users.Remove(_user);
@@ -128,6 +121,9 @@ public class AuthController : ControllerBase
 
         return Results.Ok();
     }
+
+    private Task<User?> FindUserByStdNumAsync(string studentNum)
+        => _context.Users.FirstOrDefaultAsync(u => u.StudentNumber == studentNum);
 
     private string GenerateToken(int size)
     {

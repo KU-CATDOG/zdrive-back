@@ -15,13 +15,13 @@ public class AuthControllerTest
     private Mock<HttpRequest> mockHttpRequest = new Mock<HttpRequest>();
     private Mock<HttpResponse> mockHttpResponse = new Mock<HttpResponse>();
     private Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
-    private Mock<ZDriveDbContext> mockZDriveDbContext = new Mock<ZDriveDbContext>();
+    private TestDbContext testDbContext = new TestDbContext();
     private Mock<IAuthorizationManager> mockAuthorizationManager = new Mock<IAuthorizationManager>();
     private Mock<ISessionStorage> mockSessionStorage = new Mock<ISessionStorage>();
 
     private AuthController CreateAuthController()
     {
-        var controller = new AuthController(mockZDriveDbContext.Object, mockAuthorizationManager.Object, mockSessionStorage.Object);
+        var controller = new AuthController(testDbContext.Object, mockAuthorizationManager.Object, mockSessionStorage.Object);
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = mockHttpContext.Object
@@ -30,7 +30,7 @@ public class AuthControllerTest
     }
 
     [Test]
-    public void Login_ValidStudentNumAndPassword_ReturnsOkStatusCode()
+    public async Task Login_ValidStudentNumAndPassword_ReturnsOkStatusCodeAsync()
     {
         // Arrange
         var dict = new Dictionary<Guid, Session>();
@@ -48,7 +48,7 @@ public class AuthControllerTest
             Password = "drowssap"
         };
 
-        var ret = controller.Login(user);
+        var ret = await controller.Login(user);
 
         // Assert
         Assert.That(ret, Is.EqualTo(Results.Ok()));
@@ -56,7 +56,7 @@ public class AuthControllerTest
     }
 
     [Test]
-    public void Login_IncorrectPassword_ReturnsNotFoundStatusCode()
+    public async Task Login_IncorrectPassword_ReturnsNotFoundStatusCodeAsync()
     {
         // Act
         var controller = CreateAuthController();
@@ -66,14 +66,14 @@ public class AuthControllerTest
             Password = "naifoewfho23hpqiofhoi23fh"
         };
 
-        var ret = controller.Login(user);
+        var ret = await controller.Login(user);
 
         // Assert
         Assert.That(ret, Is.EqualTo(Results.NotFound()));
     }
 
     [Test]
-    public void Login_NonExistStudentNum_ReturnsNotFoundStatusCode()
+    public async Task Login_NonExistStudentNum_ReturnsNotFoundStatusCodeAsync()
     {
         // Act
         var controller = CreateAuthController();
@@ -83,14 +83,14 @@ public class AuthControllerTest
             Password = "naifoewfho23hpqiofhoi23fh"
         };
 
-        var ret = controller.Login(user);
+        var ret = await controller.Login(user);
 
         // Assert
         Assert.That(ret, Is.EqualTo(Results.NotFound()));
     }
 
     [Test]
-    public void Login_NotVerifiedUser_ReturnsForbidStatusCode()
+    public async Task Login_NotVerifiedUser_ReturnsForbidStatusCodeAsync()
     {
         // Act
         var controller = CreateAuthController();
@@ -100,7 +100,7 @@ public class AuthControllerTest
             Password = "naifoewfho23hpqiofhoi23fh"
         };
 
-        var ret = controller.Login(user);
+        var ret = await controller.Login(user);
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.ForbidHttpResult)));
@@ -177,21 +177,6 @@ public class AuthControllerTest
     public async Task Register_ValidUserInformation_ShouldBeAddedInDB()
     {
         // Arrange
-        var userList = GetFakeUserList();
-        var studentNumberList = new List<StudentNum>();
-
-        mockZDriveDbContext.Setup(foo => foo.Users)
-            .ReturnsDbSet(userList);
-        mockZDriveDbContext.Setup(foo => foo.Users.AddAsync(It.IsAny<User>(), It.IsAny<System.Threading.CancellationToken>()))
-            .Callback((User user, CancellationToken token) => { userList.Add(user); });
-        mockZDriveDbContext.Setup(foo => foo.SaveChangesAsync(default))
-            .Returns(Task.FromResult(1))
-            .Verifiable();
-        mockZDriveDbContext.Setup(foo => foo.StudentNums)
-            .ReturnsDbSet(studentNumberList);
-        mockZDriveDbContext.Setup(foo => foo.StudentNums.AddAsync(It.IsAny<StudentNum>(), It.IsAny<System.Threading.CancellationToken>()))
-            .Callback((StudentNum studentNum, CancellationToken token) => { studentNumberList.Add(studentNum); });
-
         var studentNumber = "2021320006";
         var registration = new Registration
         {
@@ -205,10 +190,10 @@ public class AuthControllerTest
         var ret = await controller.Register(registration);
 
         // Assert
-        mockZDriveDbContext.Verify();
+        testDbContext.Verify();
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Created<User>)));
-        Assert.That(studentNumberList.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
-        Assert.That(userList.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
+        Assert.That(testDbContext.StudentNums.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
+        Assert.That(testDbContext.Users.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
     }
 
     [Test]
@@ -235,17 +220,9 @@ public class AuthControllerTest
     public async Task Remove_ValidStudentNumAndPassword_ShouldRemoveUserInDBAndSession()
     {
         // Arrange
-        var db = GetFakeUserList();
         var ssid = Guid.NewGuid();
         var session = new Dictionary<Guid, Session> { { ssid, new Session(2, DateTime.Now) } };
 
-        mockZDriveDbContext.Setup(x => x.Users)
-            .ReturnsDbSet(db);
-        mockZDriveDbContext.Setup(x => x.Users.Remove(It.IsAny<User>()))
-            .Callback((User user) => { db.Remove(user); });
-        mockZDriveDbContext.Setup(x => x.SaveChangesAsync(default))
-            .Returns(Task.FromResult(1))
-            .Verifiable();
         mockSessionStorage.Setup(x => x.RemoveUser(2))
             .Callback(() => { session.Remove(ssid); });
 
@@ -260,9 +237,9 @@ public class AuthControllerTest
         var ret = await controller.Remove(user);
 
         // Assert
-        mockZDriveDbContext.Verify();
+        testDbContext.Verify();
         Assert.That(ret, Is.EqualTo(Results.Ok()));
-        Assert.That(db.Find(x => x.StudentNumber == user.StudentNumber), Is.Null);
+        Assert.That(testDbContext.StudentNums.Find(x => x.StudentNumber == user.StudentNumber), Is.Null);
         Assert.That(session.Count, Is.EqualTo(0));
     }
 
@@ -281,7 +258,6 @@ public class AuthControllerTest
         var ret = await controller.Remove(user);
 
         // Assert
-        mockZDriveDbContext.Verify();
         Assert.That(ret, Is.EqualTo(Results.NotFound()));
     }
 
@@ -300,7 +276,6 @@ public class AuthControllerTest
         var ret = await controller.Remove(user);
 
         // Assert
-        mockZDriveDbContext.Verify();
         Assert.That(ret, Is.EqualTo(Results.NotFound()));
     }
 
@@ -330,8 +305,8 @@ public class AuthControllerTest
         mockHttpResponse.Setup(foo => foo.Cookies).Returns(mockCookie.Object);
         mockHttpContext.Setup(foo => foo.Response).Returns(mockHttpResponse.Object);
         mockHttpContext.Setup(foo => foo.Request).Returns(mockHttpRequest.Object);
-        mockZDriveDbContext.Setup(foo => foo.Users)
-            .ReturnsDbSet(GetFakeUserList());
+        testDbContext.Setup();
+        testDbContext.AddElementsInUserTable(GetFakeUserList());
         mockAuthorizationManager.Setup(foo => foo.CheckSession(mockHttpRequest.Object, out id))
             .Returns(Results.Ok());
     }

@@ -25,13 +25,12 @@ public class SessionStorage : ISessionStorage
     public bool AddSession(int userId, out Guid ssid)
     {
         RemoveExpiredUser();
-
-        foreach (var v in _session.Values)
-            if (v.Id == userId)
-            {
-                ssid = default;
-                return false;
-            }
+        
+        if (FindUserById(userId))
+        {
+            ssid = default;
+            return false;
+        }
 
         ssid = Guid.NewGuid();
         _session[ssid] = new Session(userId, DateTime.Now.Add(expires));
@@ -43,12 +42,11 @@ public class SessionStorage : ISessionStorage
     {
         RemoveExpiredUser();
 
-        foreach (var v in _session.Values)
-            if (v.Id == userId)
-            {
-                ssid = default;
-                return false;
-            }
+        if (FindUserById(userId))
+        {
+            ssid = default;
+            return false;
+        }
 
         ssid = Guid.NewGuid();
         _session[ssid] = new Session(userId, authority, DateTime.Now.Add(expires));
@@ -60,17 +58,25 @@ public class SessionStorage : ISessionStorage
     {
         RemoveExpiredUser();
 
-        foreach (var v in _session.Values)
-            if (v.Id == userId)
-            {
-                ssid = default;
-                return false;
-            }
+        if (FindUserById(userId))
+        {
+            ssid = default;
+            return false;
+        }
 
         ssid = Guid.NewGuid();
         _session[ssid] = new Session(userId, dateTime);
 
         return true;
+    }
+
+    private bool FindUserById(int userId)
+    {
+        foreach (var v in _session.Values)
+            if (v.Id == userId)
+                return true;
+
+        return false;
     }
 
     public void RemoveUser(Guid ssid)
