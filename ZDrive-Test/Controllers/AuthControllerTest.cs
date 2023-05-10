@@ -15,13 +15,13 @@ public class AuthControllerTest
     private Mock<HttpRequest> mockHttpRequest = new Mock<HttpRequest>();
     private Mock<HttpResponse> mockHttpResponse = new Mock<HttpResponse>();
     private Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
-    private TestDbContext testDbContext = new TestDbContext();
+    private TestDbContextCreater testDbContextCreater = null!;
     private Mock<IAuthorizationManager> mockAuthorizationManager = new Mock<IAuthorizationManager>();
     private Mock<ISessionStorage> mockSessionStorage = new Mock<ISessionStorage>();
 
-    private AuthController CreateAuthController()
+    private AuthController CreateAuthController(ZDriveDbContext context)
     {
-        var controller = new AuthController(testDbContext.Object, mockAuthorizationManager.Object, mockSessionStorage.Object);
+        var controller = new AuthController(context, mockAuthorizationManager.Object, mockSessionStorage.Object);
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = mockHttpContext.Object
@@ -40,8 +40,10 @@ public class AuthControllerTest
         mockSessionStorage.Setup(x => x.AddSession(2, out ssid))
             .Returns(() => { dict[ssid] = new Session(2, DateTime.Now); return true; });
 
+        using var context = testDbContextCreater.Create();
+        var controller = CreateAuthController(context);
+
         // Act
-        var controller = CreateAuthController();
         var user = new Login
         {
             StudentNumber = "2020320124",
@@ -58,8 +60,11 @@ public class AuthControllerTest
     [Test]
     public async Task Login_IncorrectPassword_ReturnsNotFoundStatusCodeAsync()
     {
+        // Assert
+        using var context = testDbContextCreater.Create();
+        var controller = CreateAuthController(context);
+
         // Act
-        var controller = CreateAuthController();
         var user = new Login
         {
             StudentNumber = "2020320124",
@@ -75,8 +80,11 @@ public class AuthControllerTest
     [Test]
     public async Task Login_NonExistStudentNum_ReturnsNotFoundStatusCodeAsync()
     {
+        // Assert
+        using var context = testDbContextCreater.Create();
+        var controller = CreateAuthController(context);
+
         // Act
-        var controller = CreateAuthController();
         var user = new Login
         {
             StudentNumber = "2021320108",
@@ -92,8 +100,11 @@ public class AuthControllerTest
     [Test]
     public async Task Login_NotVerifiedUser_ReturnsForbidStatusCodeAsync()
     {
+        // Assert
+        using var context = testDbContextCreater.Create();
+        var controller = CreateAuthController(context);
+
         // Act
-        var controller = CreateAuthController();
         var user = new Login
         {
             StudentNumber = "2021320003",
@@ -118,9 +129,11 @@ public class AuthControllerTest
         mockHttpRequest.Setup(x => x.Cookies["sessionId"]).Returns(ssid.ToString());
 
         dict[ssid] = new Session(2, DateTime.Now);
+        
+        using var context = testDbContextCreater.Create();
+        var controller = CreateAuthController(context);
 
         // Act
-        var controller = CreateAuthController();
         var ret = controller.Logout();
 
         // Assert
@@ -142,8 +155,10 @@ public class AuthControllerTest
 
         dict[ssid] = new Session(2, DateTime.Now);
 
+        using var context = testDbContextCreater.Create();
+        var controller = CreateAuthController(context);
+
         // Act
-        var controller = CreateAuthController();
         var ret = controller.Logout();
 
         // Assert
@@ -164,8 +179,10 @@ public class AuthControllerTest
 
         dict[ssid] = new Session(2, DateTime.Now);
 
+        using var context = testDbContextCreater.Create();
+        var controller = CreateAuthController(context);
+
         // Act
-        var controller = CreateAuthController();
         var ret = controller.Logout();
 
         // Assert
@@ -185,15 +202,16 @@ public class AuthControllerTest
             Password = "passdrow",
         };
 
+        using var context = testDbContextCreater.Create();
+        var controller = CreateAuthController(context);
+
         // Act
-        var controller = CreateAuthController();
         var ret = await controller.Register(registration);
 
         // Assert
-        testDbContext.Verify();
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Created<User>)));
-        Assert.That(testDbContext.StudentNums.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
-        Assert.That(testDbContext.Users.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
+        Assert.That(context.StudentNums.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
+        Assert.That(context.Users.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
     }
 
     [Test]
@@ -208,8 +226,10 @@ public class AuthControllerTest
             Password = "passdrow",
         };
 
+        using var context = testDbContextCreater.Create();
+        var controller = CreateAuthController(context);
+
         // Act
-        var controller = CreateAuthController();
         var ret = await controller.Register(registration);
 
         // Assert
@@ -232,14 +252,15 @@ public class AuthControllerTest
             Password = "drowssap"
         };
 
+        using var context = testDbContextCreater.Create();
+        var controller = CreateAuthController(context);
+
         // Act
-        var controller = CreateAuthController();
         var ret = await controller.Remove(user);
 
         // Assert
-        testDbContext.Verify();
         Assert.That(ret, Is.EqualTo(Results.Ok()));
-        Assert.That(testDbContext.StudentNums.Find(x => x.StudentNumber == user.StudentNumber), Is.Null);
+        Assert.That(context.Users.FirstOrDefault(x => x.StudentNumber == user.StudentNumber), Is.Null);
         Assert.That(session.Count, Is.EqualTo(0));
     }
 
@@ -253,8 +274,10 @@ public class AuthControllerTest
             Password = "drowssap"
         };
 
+        using var context = testDbContextCreater.Create();
+        var controller = CreateAuthController(context);
+
         // Act
-        var controller = CreateAuthController();
         var ret = await controller.Remove(user);
 
         // Assert
@@ -271,31 +294,34 @@ public class AuthControllerTest
             Password = "asdasd"
         };
 
+        using var context = testDbContextCreater.Create();
+        var controller = CreateAuthController(context);
+
         // Act
-        var controller = CreateAuthController();
         var ret = await controller.Remove(user);
 
         // Assert
         Assert.That(ret, Is.EqualTo(Results.NotFound()));
     }
 
-    [Test]
-    public void Recover_ValidStudentNum_ShouldResetPasswordToDefault()
-    {
-        throw new NotImplementedException();
-    }
+    // Todo: 계정 비밀번호 복구하는거 만들어야함
+    // [Test]
+    // public void Recover_ValidStudentNum_ShouldResetPasswordToDefault()
+    // {
+    //     throw new NotImplementedException();
+    // }
 
-    [Test]
-    public void Recover_NonStudentNum_ReturnsNotFoundStatusCode()
-    {
-        throw new NotImplementedException();
-    }
+    // [Test]
+    // public void Recover_NonStudentNum_ReturnsNotFoundStatusCode()
+    // {
+    //     throw new NotImplementedException();
+    // }
 
-    [Test]
-    public void Recover_InsufficientAuthority_ReturnsForbidStatusCode()
-    {
-        throw new NotImplementedException();
-    }
+    // [Test]
+    // public void Recover_InsufficientAuthority_ReturnsForbidStatusCode()
+    // {
+    //     throw new NotImplementedException();
+    // }
 
     [SetUp]
     public void SetUp()
@@ -305,34 +331,58 @@ public class AuthControllerTest
         mockHttpResponse.Setup(foo => foo.Cookies).Returns(mockCookie.Object);
         mockHttpContext.Setup(foo => foo.Response).Returns(mockHttpResponse.Object);
         mockHttpContext.Setup(foo => foo.Request).Returns(mockHttpRequest.Object);
-        testDbContext.Setup();
-        testDbContext.AddElementsInUserTable(GetFakeUserList());
+
+        testDbContextCreater = new TestDbContextCreater();
+        testDbContextCreater.Setup(c => 
+        {
+            c.Users.AddRange(fakeUserList);
+            c.StudentNums.AddRange(fakeStdNumList);
+            c.SaveChanges();
+        });
+
         mockAuthorizationManager.Setup(foo => foo.CheckSession(mockHttpRequest.Object, out id))
             .Returns(Results.Ok());
     }
 
-    private List<User> GetFakeUserList()
+    [TearDown]
+    public void TearDown()
     {
-        return new List<User>()
-        {
-            new User
-            {
-                Id = 1,
-                Name = "Jun",
-                StudentNumber = "2021320003",
-                PasswordHash = "Vut+mCn8wSAlGPmOSA+qfXA6b7/wdpQL2jjFYUcIEMU=",
-                Salt = "realtest",
-                IsVerified = false
-            },
-            new User
-            {
-                Id = 2,
-                Name = "Chaenamul",
-                StudentNumber = "2020320124",
-                PasswordHash = "iQPdQPkVlcPYd2H4LCJC1vOEohqnSLgdmOjfFsOEOjk=",
-                Salt = "realtest",
-                IsVerified = true
-            }
-        };
+        testDbContextCreater.Dispose();
     }
+
+    private User[] fakeUserList = new User[]
+    {
+        new User
+        {
+            Id = 1,
+            Name = "Jun",
+            StudentNumber = "2021320003",
+            PasswordHash = "Vut+mCn8wSAlGPmOSA+qfXA6b7/wdpQL2jjFYUcIEMU=",
+            Salt = "realtest",
+            IsVerified = false
+        },
+        new User
+        {
+            Id = 2,
+            Name = "Chaenamul",
+            StudentNumber = "2020320124",
+            PasswordHash = "iQPdQPkVlcPYd2H4LCJC1vOEohqnSLgdmOjfFsOEOjk=", // password: drowssap
+            Salt = "realtest",
+            IsVerified = true
+        }
+    };
+
+    private StudentNum[] fakeStdNumList = new StudentNum[]
+    {
+        new StudentNum
+        {
+            StudentNumber = "2021320003",
+            Name = "Jun"
+        },
+        new StudentNum
+        {
+            StudentNumber = "2020320124",
+            Name = "Chaenamul"
+        }
+    };
 }
