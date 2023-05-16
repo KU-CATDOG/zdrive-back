@@ -36,8 +36,8 @@ public class AuthController : ControllerBase
     {
         var _user = await FindUserByStdNumAsync(login.StudentNumber);
         if (_user == null) return Results.NotFound();
-        if (!_user.IsVerified) return Results.Forbid();
         if (GeneratePasswordHash(login.Password, _user.Salt) != _user.PasswordHash) return Results.NotFound();
+        if (!_user.IsVerified) return Results.Forbid();
 
         _session.AddSession(_user.Id, out var ssid);
 

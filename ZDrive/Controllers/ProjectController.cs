@@ -17,6 +17,7 @@ public class ProjectController : ControllerBase
         _context = context;
     }
 
+    [HttpPost]
     public async Task<IResult> Create(Project project)
     {
         var auth = _auth.CheckSession(Request, out var userId);
@@ -39,6 +40,7 @@ public class ProjectController : ControllerBase
         return Results.Created($"/calendar/{newProject.Id}", project);
     }
 
+    [HttpDelete("{id}")]
     public async Task<IResult> Delete(int id)
     {
         var auth = _auth.CheckSession(Request, out var userId);
@@ -55,18 +57,22 @@ public class ProjectController : ControllerBase
         return Results.Ok(_project);
     }
 
+    [HttpGet("{id}")]
     public async Task<IResult> Read(int index)
     {
         var project = await _context.Projects.FindAsync(index);
         return project == null ? Results.NotFound() : Results.Ok(project);
     }
 
+    [Route("list")]
+    [HttpGet]
     public async Task<IResult> ReadAllProject()
     {
         var projects = await _context.Projects.ToListAsync();
         return Results.Ok(projects);
     }
 
+    [HttpPut("{id}")]
     public async Task<IResult> Update(int id, Project project)
     {
         var auth = _auth.CheckSession(Request, out var userId);

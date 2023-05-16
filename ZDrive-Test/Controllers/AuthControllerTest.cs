@@ -108,7 +108,7 @@ public class AuthControllerTest
         var user = new Login
         {
             StudentNumber = "2021320003",
-            Password = "naifoewfho23hpqiofhoi23fh"
+            Password = "password"
         };
 
         var ret = await controller.Login(user);
