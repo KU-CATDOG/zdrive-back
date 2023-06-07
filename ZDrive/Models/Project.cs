@@ -24,12 +24,27 @@ public class Project
 
     public DateTime? EndDate { get; set; }
 
-    [StringLength(20)]
-    public string? Status { get; set; } = string.Empty;
+    public Status Status { get; set; } = Status.NotStarted;
+
+    [StringLength(100)]
+    public string? Genre {get;set;} = string.Empty;
+
+    [StringLength(100)]
+    public string? Engine {get;set;} = string.Empty;
+
+    [StringLength(500)]
+    public string? FileSrc {get;set;} = string.Empty;
 
     public User User { get; set; } = null!;
 
     public ICollection<Image> Images { get; } = new List<Image>(); // Navigation collection
     public ICollection<Member> Members { get; } = new List<Member>(); // Navigation collection
     public ICollection<Milestone> Milestones { get; } = new List<Milestone>(); // Navigation collection
+}
+
+public enum Status
+{
+    NotStarted,
+    InProgress,
+    Completed
 }
