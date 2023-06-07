@@ -12,12 +12,12 @@ public class User
     public int Id { get; set; }
 
     [Required]
-    [StringLength(256)]
-    public string Name { get; set; } = string.Empty;
-
-    [Required]
     [StringLength(10)]
     public string StudentNumber { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(256)]
+    public string Name { get; set; } = string.Empty;
 
     [Required]
     [StringLength(256)]
@@ -33,6 +33,8 @@ public class User
 
     [JsonIgnore]
     public StudentNum StudentNum { get; set; } = null!;
+
+    public ICollection<Project> Projects { get; } = new List<Project>(); // Navigation collection
 }
 
 public enum Authority

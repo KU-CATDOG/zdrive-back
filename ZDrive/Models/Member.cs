@@ -4,17 +4,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ZDrive.Models;
 
-[PrimaryKey(nameof(StudentNumber), nameof(Role))]
 public class Member
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+
+    [Required]
+    public int ProjectId { get; set; } = default;
+
+    [Required]
     [StringLength(10)]
     public string StudentNumber { get; set; } = string.Empty;
+
+    public int Index { get; set; } = 0;
 
     [Required]
     public Role Role { get; set; } = default;
 
-    [Required]
-    public int ProjectId { get; set; } = default;
+    public string? Description { get; set; } = string.Empty;
 
     public Project Project { get; set; } = null!;
 

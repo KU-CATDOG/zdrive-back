@@ -17,6 +17,13 @@ public class ZDriveDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>()
+            .HasMany(e => e.Projects)
+            .WithOne(e => e.User)
+            .HasForeignKey(e => e.UserId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.SetNull);
+
         modelBuilder.Entity<Project>()
             .HasMany(e => e.Images)
             .WithOne(e => e.Project)
@@ -64,6 +71,13 @@ public class ZDriveDbContext : DbContext
             .HasConversion(
                 v => v.ToString(),
                 v => (Authority)Enum.Parse(typeof(Authority), v)
+            );
+
+        modelBuilder.Entity<Project>()
+            .Property(e => e.Status)
+            .HasConversion(
+                v => v.ToString(),
+                v => (Status)Enum.Parse(typeof(Status), v)
             );
     }
 }
