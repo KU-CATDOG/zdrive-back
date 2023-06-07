@@ -13,5 +13,7 @@ public class Image
     [Required]
     public int ProjectId { get; set; }
 
+    public int Index { get; set; } = 0;
+
     public Project Project { get; set; } = null!;
 }

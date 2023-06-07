@@ -17,6 +17,13 @@ public class ZDriveDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>()
+            .HasMany(e => e.Projects)
+            .WithOne(e => e.User)
+            .HasForeignKey(e => e.UserId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.SetNull);
+
         modelBuilder.Entity<Project>()
             .HasMany(e => e.Images)
             .WithOne(e => e.Project)
