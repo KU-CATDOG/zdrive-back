@@ -34,38 +34,52 @@ ID 비밀번호 이름 전화번호 학번 이메일 권한정도(일반사용�
 ### API List
 
 - /auth
-    - /auth/login
-        - POST Action
-        - {StudentNumber: 학번, Password: 패스워드}
-        - 로그인 실패 시 NotFound
-        - 인증안된 회원일 때 Forbid
-    - /auth/logout
-        - GET Action, 회원 권한 필요
-        - 세션 쿠키 삭제
-        - SSID 쿠키 없으면 NotFound
-        - SSID 쿠키 형식 오류 시 BadRequest
-        - 없는 SSID면 NotFound
-    - /auth/register
-        - POST Action
-        - {Name: 이름, StudentNumber: 학번, Password: 패스워드}
-        - 학번 이미 있으면 Conflict
-    - /auth/remove
-        - POST Action
-        - 학번 비밀번호 받아서 DB에서 해당 회원 제거
-        - {StudentNumber: 학번, Password: 패스워드}
-        - 학번 없거나 비밀번호 틀리면 NotFound
-    - /auth/recover
-        - POST Action, 어드민 권한 필요
-        - 학번 받아서 비밀번호 password로 초기화
-        - 미구현
+  - /auth/login
+    - POST Action
+    - {StudentNumber: 학번, Password: 패스워드}
+    - 로그인 실패 시 NotFound
+    - 인증안된 회원일 때 Forbid
+  - /auth/logout
+    - GET Action, 회원 권한 필요
+    - 세션 쿠키 삭제
+    - SSID 쿠키 없으면 NotFound
+    - SSID 쿠키 형식 오류 시 BadRequest
+    - 없는 SSID면 NotFound
+  - /auth/register
+    - POST Action
+    - {Name: 이름, StudentNumber: 학번, Password: 패스워드}
+    - 학번 이미 있으면 Conflict
+  - /auth/remove
+    - POST Action
+    - 학번 비밀번호 받아서 DB에서 해당 회원 제거
+    - {StudentNumber: 학번, Password: 패스워드}
+    - 학번 없거나 비밀번호 틀리면 NotFound
+  - /auth/recover
+    - POST Action, 어드민 권한 필요
+    - 학번 받아서 비밀번호 password로 초기화
+    - 미구현
 - /project
-    - /project/{id}
-        - GET Action
-        - 해당 id 프로젝트 정보 가져옴
-        - id 없으면 NotFound
-    - /project/list
-        - GET Action
-        - 모든 프로젝트 List 가져옴
+  - /project/{id}
+    - GET Action
+    - 해당 id 프로젝트 정보 가져옴
+    - id 없으면 NotFound
+  - /project/list
+    - GET Action
+    - 모든 프로젝트 List 가져옴
 - /admin
 
 ---
+
+# Production Setting에 대해
+
+## ZDrive/appsettings.Production.json
+
+이중 ConnectionStrings에서 DataSource의 위치를 변경해주어야 합니다
+
+해당 위치에 app.db의 sqlite db 파일이 필요합니다
+
+```bash
+$ dotnet run --environment Production
+```
+
+위의 코드를 통해 Production으로 실행됩니다
