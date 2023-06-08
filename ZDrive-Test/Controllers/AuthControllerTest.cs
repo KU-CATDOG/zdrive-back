@@ -16,12 +16,11 @@ public class AuthControllerTest
     private Mock<HttpResponse> mockHttpResponse = new Mock<HttpResponse>();
     private Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
     private TestDbContextCreater testDbContextCreater = null!;
-    private Mock<IAuthorizationManager> mockAuthorizationManager = new Mock<IAuthorizationManager>();
     private Mock<ISessionStorage> mockSessionStorage = new Mock<ISessionStorage>();
 
     private AuthController CreateAuthController(ZDriveDbContext context)
     {
-        var controller = new AuthController(context, mockAuthorizationManager.Object, mockSessionStorage.Object);
+        var controller = new AuthController(context, mockSessionStorage.Object);
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = mockHttpContext.Object
@@ -326,7 +325,6 @@ public class AuthControllerTest
     [SetUp]
     public void SetUp()
     {
-        var id = 1;
         var mockCookie = new Mock<IResponseCookies>();
         mockHttpResponse.Setup(foo => foo.Cookies).Returns(mockCookie.Object);
         mockHttpContext.Setup(foo => foo.Response).Returns(mockHttpResponse.Object);
@@ -339,9 +337,6 @@ public class AuthControllerTest
             c.StudentNums.AddRange(fakeStdNumList);
             c.SaveChanges();
         });
-
-        mockAuthorizationManager.Setup(foo => foo.CheckSession(mockHttpRequest.Object, out id))
-            .Returns(Results.Ok());
     }
 
     [TearDown]

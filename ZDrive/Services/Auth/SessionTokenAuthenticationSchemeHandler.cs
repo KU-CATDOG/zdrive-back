@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
+using ZDrive.Models;
 
 namespace ZDrive.Services;
 public class SessionTokenAuthenticationSchemeHandler : AuthenticationHandler<SessionTokenAuthenticationSchemeOptions>
@@ -28,7 +29,9 @@ public class SessionTokenAuthenticationSchemeHandler : AuthenticationHandler<Ses
         if (!_session.TryGetUser(guid, out var session))
             return AuthenticateResult.Fail("Session authentication failed.  Token does not exist in storage.");
 
-        var claims = new[] { new Claim("Id", session.Id.ToString()) };
+        var claims = new[] { 
+            new Claim(ClaimTypes.Sid, session.Id.ToString()),
+            new Claim(ClaimTypes.Role, session.Authority.ToString()) };
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "Tokens"));
         var ticket = new AuthenticationTicket(principal, this.Scheme.Name);
         return AuthenticateResult.Success(ticket);

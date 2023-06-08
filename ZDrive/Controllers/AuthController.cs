@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
@@ -13,13 +14,11 @@ namespace ZDrive.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly ZDriveDbContext _context;
-    private readonly IAuthorizationManager _auth;
     private readonly ISessionStorage _session;
 
-    public AuthController(ZDriveDbContext context, IAuthorizationManager auth, ISessionStorage session)
+    public AuthController(ZDriveDbContext context, ISessionStorage session)
     {
         _context = context;
-        _auth = auth;
         _session = session;
     }
 
@@ -32,6 +31,7 @@ public class AuthController : ControllerBase
 
     [Route("login")]
     [HttpPost]
+    [AllowAnonymous]
     public async Task<IResult> Login(Login login)
     {
         var _user = await FindUserByStdNumAsync(login.StudentNumber);
@@ -43,7 +43,7 @@ public class AuthController : ControllerBase
 
         Response.Cookies.Append("sessionId", ssid.ToString(), new CookieOptions
         {
-            SameSite = SameSiteMode.None,
+            SameSite = SameSiteMode.None, // 프로덕션 환경에서는 Lax로 설정해야함
             Secure = true,
             HttpOnly = true
         });
@@ -53,6 +53,7 @@ public class AuthController : ControllerBase
 
     [Route("logout")]
     [HttpGet]
+    [AllowAnonymous]
     public IResult Logout()
     {
         var ssid = Request.Cookies["sessionId"];
@@ -74,6 +75,7 @@ public class AuthController : ControllerBase
 
     [Route("register")]
     [HttpPost]
+    [AllowAnonymous]
     public async Task<IResult> Register(Registration reg)
     {
         var checkUser = await FindUserByStdNumAsync(reg.StudentNumber);

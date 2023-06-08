@@ -16,7 +16,6 @@ builder.Services.AddDbContext<ZDriveDbContext>(options =>
     options.UseSqlite(connectionString));
 
 builder.Services.AddSingleton<ISessionStorage, SessionStorage>();
-builder.Services.AddTransient<IAuthorizationManager, AuthorizationManager>();
 
 builder.Services.AddAuthentication()
     .AddScheme<SessionTokenAuthenticationSchemeOptions, SessionTokenAuthenticationSchemeHandler>(
@@ -29,5 +28,5 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
+app.MapControllers().RequireAuthorization();
 app.Run();

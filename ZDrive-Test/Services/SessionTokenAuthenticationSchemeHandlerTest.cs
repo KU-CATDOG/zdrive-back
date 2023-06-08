@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -125,6 +126,6 @@ public class SessionTokenAuthenticationSchemeHandlerTest
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Succeeded, Is.True);
-        Assert.That(result.Ticket?.Principal.HasClaim(c => c.Type == "Id" && c.Value == "1"), Is.True);
+        Assert.That(result.Ticket?.Principal.HasClaim(c => c.Type == ClaimTypes.Sid && c.Value == "1"), Is.True);
     }
 }

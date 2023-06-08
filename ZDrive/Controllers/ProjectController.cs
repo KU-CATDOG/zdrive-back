@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ZDrive.Data;
@@ -8,21 +9,16 @@ namespace ZDrive.Controllers;
 
 public class ProjectController : ControllerBase
 {
-    private readonly IAuthorizationManager _auth;
     private readonly ZDriveDbContext _context;
 
-    public ProjectController(IAuthorizationManager auth, ZDriveDbContext context)
+    public ProjectController(ZDriveDbContext context)
     {
-        _auth = auth;
         _context = context;
     }
 
     [HttpPost]
     public async Task<IResult> Create(Project project)
     {
-        var auth = _auth.CheckSession(Request, out var userId);
-        if (auth != Results.Ok()) return auth;
-
         if ((await _context.Projects.FirstOrDefaultAsync(p => p.Name == project.Name)) != null)
             return Results.Conflict();
 
@@ -43,9 +39,6 @@ public class ProjectController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IResult> Delete(int id)
     {
-        var auth = _auth.CheckSession(Request, out var userId);
-        if (auth != Results.Ok()) return auth;
-
         var _project = await _context.Projects.FindAsync(id);
         if (_project == null)
             return Results.NotFound();
@@ -75,9 +68,6 @@ public class ProjectController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IResult> Update(int id, Project project)
     {
-        var auth = _auth.CheckSession(Request, out var userId);
-        if (auth != Results.Ok()) return auth;
-
         var _project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
 
         if (_project is null) return TypedResults.NotFound();
