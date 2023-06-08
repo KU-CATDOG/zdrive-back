@@ -18,12 +18,16 @@ builder.Services.AddDbContext<ZDriveDbContext>(options =>
 builder.Services.AddSingleton<ISessionStorage, SessionStorage>();
 builder.Services.AddTransient<IAuthorizationManager, AuthorizationManager>();
 
+builder.Services.AddAuthentication()
+    .AddScheme<SessionTokenAuthenticationSchemeOptions, SessionTokenAuthenticationSchemeHandler>(
+        "SessionTokens",
+        opts => {}
+    );
+
 var app = builder.Build();
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

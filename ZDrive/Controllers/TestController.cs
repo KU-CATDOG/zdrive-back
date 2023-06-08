@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ZDrive.Data;
@@ -16,6 +17,7 @@ public class TestController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public void TestGet()
     {
     }
