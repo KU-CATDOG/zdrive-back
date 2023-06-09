@@ -1,0 +1,34 @@
+version: 2.1
+
+orbs:
+  windows: circleci/windows@5.0.0
+
+jobs:
+  test:
+    description: Setup and run application tests
+    executor:
+      name: windows/default
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dotnet-packages-v1-{{ checksum "ZDrive/zdrive-back.csproj" }}{{ checksum "ZDrive-Test/ZDrive-Test.csproj" }}
+      - run:
+          name: "Install project dependencies"
+          command: dotnet.exe restore
+      - save_cache:
+          paths:
+            - C:\Users\circleci\.nuget\packages
+          key: dotnet-packages-v1-{{ checksum "ZDrive/zdrive-back.csproj" }}{{ checksum "ZDrive-Test/ZDrive-Test.csproj" }}
+      - run:
+          name: "Run Application Tests"
+          command: dotnet test --logger "junit;LogFilePath=./results.xml"
+      - run:
+          name: "Print Working Directory"
+          command: pwd
+      - store_test_results:
+          path: ZDrive-Test
+workflows:
+  test-workflow:
+    jobs:
+      - test

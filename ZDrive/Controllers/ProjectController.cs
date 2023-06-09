@@ -27,7 +27,8 @@ public class ProjectController : ControllerBase
             Name = project.Name,
             Description = project.Description,
             StartDate = project.StartDate,
-            EndDate = project.EndDate
+            EndDate = project.EndDate,
+            UserId = project.UserId // 나중에 고쳐야함
         };
 
         await _context.Projects.AddAsync(newProject);
