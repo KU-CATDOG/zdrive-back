@@ -15,12 +15,12 @@ jobs:
           command: dotnet.exe restore
       - run:
           name: "Run Application Tests"
-          command: dotnet.exe test -v n --results-directory:test_coverage --collect:"Code Coverage"
+          command: dotnet test --logger "junit;LogFilePath=./results.xml"
       - run:
           name: "Print Working Directory"
           command: pwd
-      - store_artifacts:
-          path: C:\Users\circleci\project\test_coverage
+      - store_test_results:
+          path: ZDrive-Test
 workflows:
   test-workflow:
     jobs:
