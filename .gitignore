@@ -229,3 +229,5 @@ AppPackages/
 *.db-shm
 
 *.db-wal
+
+/**/appsettings.Production.json
