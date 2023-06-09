@@ -21,7 +21,8 @@ public class ProjectControllerTest
         var project = new Project
         {
             Id = 2,
-            Name = "Baba Is You"
+            Name = "Baba Is You",
+            UserId = 1
         };
         var controller = CreateController(context);
 
@@ -40,7 +41,8 @@ public class ProjectControllerTest
         var project = new Project
         {
             Id = 2,
-            Name = "TEST"
+            Name = "TEST",
+            UserId = 1
         };
         var cnt = context.Projects.Count();
         var controller = CreateController(context);
@@ -239,7 +241,8 @@ public class ProjectControllerTest
             Name = "Baba Is You",
             Description = "Test game project",
             StartDate = DateTime.Now,
-            EndDate = DateTime.Now.AddDays(30)
+            EndDate = DateTime.Now.AddDays(30),
+            UserId = 1
         }
     };
 }
