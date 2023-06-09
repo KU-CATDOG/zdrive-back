@@ -11,7 +11,6 @@ namespace ZDrive_Test;
 public class ProjectControllerTest
 {
     private TestDbContextCreater testDbCreater = null!;
-    private Mock<IAuthorizationManager> mockAuth = null!;
 
     [Test]
     public async Task Create_ExistProjectName_ReturnsConflictStatusCode()
@@ -179,11 +178,6 @@ public class ProjectControllerTest
             c.Projects.AddRange(fakeProjectList);
             c.SaveChanges();
         });
-
-        var userId = 1;
-        mockAuth = new Mock<IAuthorizationManager>();
-        mockAuth.Setup(x => x.CheckSession(It.IsAny<HttpRequest>(), out userId))
-            .Returns(Results.Ok());
     }
 
     [TearDown]
@@ -193,7 +187,7 @@ public class ProjectControllerTest
     }
 
     private ProjectController CreateController(ZDriveDbContext context)
-        => new ProjectController(mockAuth.Object, context);
+        => new ProjectController(context);
 
     private User[] fakeUserList = new User[]
     {
