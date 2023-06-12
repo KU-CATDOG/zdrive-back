@@ -232,3 +232,5 @@ AppPackages/
 
 /**/appsettings.*
 !/**/appsettings.*.base
+log/
+logs/
