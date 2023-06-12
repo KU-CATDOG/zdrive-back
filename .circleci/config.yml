@@ -22,13 +22,31 @@ jobs:
           key: dotnet-packages-v1-{{ checksum "ZDrive/zdrive-back.csproj" }}{{ checksum "ZDrive-Test/ZDrive-Test.csproj" }}
       - run:
           name: "Run Application Tests"
-          command: dotnet test --logger "junit;LogFilePath=./results.xml"
+          command: dotnet test -v n --results-directory:test_coverage --collect:"Code Coverage" --logger "junit;LogFilePath=./results.xml"
       - run:
           name: "Print Working Directory"
           command: pwd
       - store_test_results:
           path: ZDrive-Test
+      - store_artifacts:
+          path: test_coverage
+
+  deploy:
+    description: Deploy application to test server
+    machine:
+      enabled: true
+    steps:
+      - run:
+          name: Deploy Over SSH
+          command: ssh $SSH_MERSERVER_USER@$SSH_MERSERVER_HOST -o ProxyCommand="ssh $SSH_CATSERVER_USER@$SSH_CATSERVER_HOST -p 443 -W %h:%p" "./run-zdrive-back.sh"
+
 workflows:
-  test-workflow:
+  test-and-deploy:
     jobs:
       - test
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only: develop
