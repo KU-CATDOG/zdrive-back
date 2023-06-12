@@ -230,4 +230,5 @@ AppPackages/
 
 *.db-wal
 
-/**/appsettings.Production.json
+/**/appsettings.*
+!/**/appsettings.*.base
