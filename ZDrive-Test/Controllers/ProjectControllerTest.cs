@@ -86,6 +86,7 @@ public class ProjectControllerTest
         var value = (ret as Microsoft.AspNetCore.Http.HttpResults.Ok<Project>)?.Value;
         Assert.That(value, Is.Not.Null);
         Assert.That(value?.Id, Is.EqualTo(1));
+        Assert.That(value?.Members.FirstOrDefault(m => m.Id == 1), Is.Not.Null);
     }
 
     [Test]
@@ -144,18 +145,36 @@ public class ProjectControllerTest
     }
 
     [Test]
-    public async Task AddMembers_NonProjectId_ReturnsNotFoundCode()
+    public async Task Update_UserThatIsNotOwner_ReturnsForbidStatusCode()
     {
         // Arrange
         var project = new Project
         {
-            Name = "Baba Is You"
+            Name = "Baba Is You",
+            Description = "Baba Is You!"
+        };
+        using var context = testDbCreater.Create();
+        var controller = CreateController(context, 2);
+
+        // Act
+        var ret = await controller.Update(1, project);
+
+        // Assert
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.ForbidHttpResult)));
+    }
+
+    [Test]
+    public async Task AddMembers_NonProjectId_ReturnsNotFoundStatusCode()
+    {
+        // Arrange
+        var members = new Member[]
+        {
         };
         using var context = testDbCreater.Create();
         var controller = CreateController(context);
 
         // Act
-        var ret = await controller.AddMembers(2, project);
+        var ret = await controller.AddMembers(2, members);
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.NotFound)));
@@ -166,22 +185,19 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var project = new Project
+        var members = new Member[]
         {
-            Members = new List<Member>
+            new Member
             {
-                new Member
-                {
-                    StudentNumber = "2021320006",
-                    Role = Role.Programmer
-                }
+                StudentNumber = "2021320006",
+                Role = Role.Programmer
             }
         };
         var cnt = context.Members.Count();
         var controller = CreateController(context);
 
         // Act
-        var ret = await controller.AddMembers(1, project);
+        var ret = await controller.AddMembers(1, members);
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.NotFound)));
@@ -193,22 +209,19 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var project = new Project
+        var members = new Member[]
         {
-            Members = new List<Member>
+            new Member
             {
-                new Member
-                {
-                    Id = 2,
-                    StudentNumber = "2021320003",
-                    Role = Role.GameDesigner
-                }
+                Id = 2,
+                StudentNumber = "2021320003",
+                Role = Role.GameDesigner
             }
         };
         var controller = CreateController(context);
 
         // Act
-        var ret = await controller.AddMembers(1, project);
+        var ret = await controller.AddMembers(1, members);
 
         // Assert
         var member = await context.Members.FindAsync(2);
@@ -221,22 +234,19 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var project = new Project
+        var members = new Member[] 
         {
-            Members = new List<Member>
+            new Member
             {
-                new Member
-                {
-                    Id = 2,
-                    StudentNumber = "2021320003",
-                    Role = Role.GameDesigner
-                }
+                Id = 2,
+                StudentNumber = "2021320003",
+                Role = Role.GameDesigner
             }
         };
         var controller = CreateController(context);
 
         // Act
-        var ret = await controller.AddMembers(1, project);
+        var ret = await controller.AddMembers(1, members);
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Created<Project>)));
@@ -249,21 +259,18 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var project = new Project
+        var members = new Member[]
         {
-            Members = new List<Member>
+            new Member
             {
-                new Member
-                {
-                    StudentNumber = "2021320003",
-                    Role = Role.Programmer
-                }
+                StudentNumber = "2021320003",
+                Role = Role.Programmer
             }
         };
         var controller = CreateController(context);
 
         // Act
-        var ret = await controller.AddMembers(1, project);
+        var ret = await controller.AddMembers(1, members);
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Conflict)));
@@ -274,24 +281,119 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var project = new Project
+        var members = new Member[]
         {
-            Members = new List<Member>
+            new Member
             {
-                new Member
-                {
-                    StudentNumber = "2021320003",
-                    Role = Role.GameDesigner
-                }
+                StudentNumber = "2021320003",
+                Role = Role.GameDesigner
             }
         };
         var controller = CreateController(context, 2);
 
         // Act
-        var ret = await controller.AddMembers(1, project);
+        var ret = await controller.AddMembers(1, members);
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.ForbidHttpResult)));
+    }
+
+    [Test]
+    public async Task UpdateMember_NonMemberId_ReturnsNotFountStatusCode()
+    {
+        // Arrange
+        using var context = testDbCreater.Create();
+        var member = new Member
+        {
+            Description = "Unit Test"
+        };
+        var controller = CreateController(context);
+
+        // Act
+        var ret = await controller.UpdateMember(2, member);
+
+        // Assert
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.NotFound)));
+    }
+
+    [Test]
+    public async Task UpdateMember_UserThatIsNotOwner_ReturnsForbidStatusCode()
+    {
+        // Arrange
+        using var context = testDbCreater.Create();
+        var member = new Member
+        {
+            Description = "Unit Test"
+        };
+        var controller = CreateController(context, 2);
+
+        // Act
+        var ret = await controller.UpdateMember(1, member);
+
+        // Assert
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.ForbidHttpResult)));
+    }
+
+    [Test]
+    public async Task UpdateMember_ExistMemberId_ShouldUpdateMember()
+    {
+        // Arrange
+        using var context = testDbCreater.Create();
+        var member = new Member
+        {
+            Description = "Unit Test"
+        };
+        var controller = CreateController(context);
+
+        // Act
+        var ret = await controller.UpdateMember(1, member);
+
+        // Assert
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Created<Member>)));
+        Assert.That(context.Members.First(u => u.Id == 1)?.Description, Is.EqualTo("Unit Test"));
+    }
+
+    [Test]
+    public async Task DeleteMember_NonMemberId_ReturnsNotFoundStatusCode()
+    {
+        // Arrange
+        using var context = testDbCreater.Create();
+        var controller = CreateController(context);
+
+        // Act
+        var ret = await controller.DeleteMember(2);
+
+        // Assert
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.NotFound)));
+    }
+
+    [Test]
+    public async Task DeleteMember_UserThatIsNotOwner_ReturnsForbidStatusCode()
+    {
+        // Arrange
+        using var context = testDbCreater.Create();
+        var controller = CreateController(context, 2);
+
+        // Act
+        var ret = await controller.DeleteMember(1);
+
+        // Assert
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.ForbidHttpResult)));
+    }
+
+    [Test]
+    public async Task DeleteMember_ExistMemberId_ShouldBeRemoved()
+    {
+        // Arrange
+        using var context = testDbCreater.Create();
+        var controller = CreateController(context);
+
+        // Act
+        var ret = await controller.DeleteMember(1);
+
+        // Assert
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Ok<Member>)));
+        Assert.That(context.Members.FirstOrDefault(p => p.Id == 1), Is.Null);
     }
 
     [Test]
@@ -321,6 +423,20 @@ public class ProjectControllerTest
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Ok<Project>)));
         Assert.That(context.Projects.FirstOrDefault(p => p.Id == 1), Is.Null);
+    }
+
+    [Test]
+    public async Task Delete_UserThatIsNotOwner_ReturnsForbidStatusCode()
+    {
+        // Arrange
+        using var context = testDbCreater.Create();
+        var controller = CreateController(context, 2);
+
+        // Act
+        var ret = await controller.Delete(1);
+
+        // Assert
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.ForbidHttpResult)));
     }
 
     [SetUp]
