@@ -33,6 +33,7 @@ public class ProjectController : ControllerBase
             Description = project.Description,
             StartDate = project.StartDate,
             EndDate = project.EndDate,
+            Visibility = project.Visibility,
             Status = project.Status,
             Genre = project.Genre,
             Engine = project.Engine,
@@ -93,6 +94,7 @@ public class ProjectController : ControllerBase
         _project.Description = project.Description;
         _project.StartDate = project.StartDate;
         _project.EndDate = project.EndDate;
+        _project.Visibility = project.Visibility;
         _project.Status = project.Status;
         _project.Genre = project.Genre;
         _project.Engine = project.Engine;

@@ -79,5 +79,12 @@ public class ZDriveDbContext : DbContext
                 v => v.ToString(),
                 v => (Status)Enum.Parse(typeof(Status), v)
             );
+
+        modelBuilder.Entity<Project>()
+            .Property(e => e.Visibility)
+            .HasConversion(
+                v => v.ToString(),
+                v => (Visibility)Enum.Parse(typeof(Visibility), v)
+            );
     }
 }
