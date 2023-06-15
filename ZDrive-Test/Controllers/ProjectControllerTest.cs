@@ -40,12 +40,9 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var project = new Project
-        {
-            Id = 2,
-            Name = "TEST",
-            UserId = 1
-        };
+        var project = new TestDataBuilder<Project>()
+            .Randomize()
+            .Build();
         var cnt = context.Projects.Count();
         var controller = CreateController(context);
 
@@ -54,7 +51,8 @@ public class ProjectControllerTest
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Created<Project>)));
-        Assert.That(context.Projects.Count(), Is.EqualTo(cnt + 1));
+        Assert.That(context.Projects.Find(2), Is.Not.Null);
+        Assert.That(context.Projects.Find(2)?.Name, Is.EqualTo(project.Name));
     }
 
     [Test]
@@ -110,10 +108,7 @@ public class ProjectControllerTest
     public async Task Update_NonProjectId_ReturnsNotFoundCode()
     {
         // Arrange
-        var project = new Project
-        {
-            Name = "Baba Is You"
-        };
+        var project = new Project();
         using var context = testDbCreater.Create();
         var controller = CreateController(context);
 
@@ -128,11 +123,9 @@ public class ProjectControllerTest
     public async Task Update_ExistProjectId_ShouldUpdateProject()
     {
         // Arrange
-        var project = new Project
-        {
-            Name = "Baba Is You",
-            Description = "Baba Is You!"
-        };
+        var project = new TestDataBuilder<Project>()
+            .Randomize()
+            .Build();
         using var context = testDbCreater.Create();
         var controller = CreateController(context);
 
@@ -141,7 +134,7 @@ public class ProjectControllerTest
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Created<Project>)));
-        Assert.That(context.Projects.First(u => u.Id == 1)?.Description, Is.EqualTo("Baba Is You!"));
+        Assert.That(context.Projects.First(u => u.Id == 1)?.Description, Is.EqualTo(project.Description));
     }
 
     [Test]
@@ -167,9 +160,7 @@ public class ProjectControllerTest
     public async Task AddMembers_NonProjectId_ReturnsNotFoundStatusCode()
     {
         // Arrange
-        var members = new Member[]
-        {
-        };
+        var members = new Member[] { };
         using var context = testDbCreater.Create();
         var controller = CreateController(context);
 
@@ -211,12 +202,10 @@ public class ProjectControllerTest
         using var context = testDbCreater.Create();
         var members = new Member[]
         {
-            new Member
-            {
-                Id = 2,
-                StudentNumber = "2021320003",
-                Role = Role.GameDesigner
-            }
+            new TestDataBuilder<Member>()
+            .Randomize()
+            .Setup(m => m.StudentNumber = "2020320124")
+            .Build()
         };
         var controller = CreateController(context);
 
@@ -236,12 +225,11 @@ public class ProjectControllerTest
         using var context = testDbCreater.Create();
         var members = new Member[] 
         {
-            new Member
-            {
-                Id = 2,
-                StudentNumber = "2021320003",
-                Role = Role.GameDesigner
-            }
+            new TestDataBuilder<Member>()
+            .Randomize()
+            .Setup(m => m.StudentNumber = "2021320003")
+            .Setup(m => m.Role = Role.GameDesigner)
+            .Build()
         };
         var controller = CreateController(context);
 
@@ -281,14 +269,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var members = new Member[]
-        {
-            new Member
-            {
-                StudentNumber = "2021320003",
-                Role = Role.GameDesigner
-            }
-        };
+        var members = new Member[] {};
         var controller = CreateController(context, 2);
 
         // Act
@@ -303,10 +284,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var member = new Member
-        {
-            Description = "Unit Test"
-        };
+        var member = new Member();
         var controller = CreateController(context);
 
         // Act
@@ -321,10 +299,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var member = new Member
-        {
-            Description = "Unit Test"
-        };
+        var member = new Member();
         var controller = CreateController(context, 2);
 
         // Act
@@ -339,10 +314,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var member = new Member
-        {
-            Description = "Unit Test"
-        };
+        var member = new TestDataBuilder<Member>().Randomize().Build();
         var controller = CreateController(context);
 
         // Act
@@ -350,7 +322,7 @@ public class ProjectControllerTest
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Created<Member>)));
-        Assert.That(context.Members.First(u => u.Id == 1)?.Description, Is.EqualTo("Unit Test"));
+        Assert.That(context.Members.First(u => u.Id == 1)?.Description, Is.EqualTo(member.Description));
     }
 
     [Test]
