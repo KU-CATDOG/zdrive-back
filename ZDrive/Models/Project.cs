@@ -37,8 +37,8 @@ public class Project
 
     public User User { get; set; } = null!;
 
-    public ICollection<Image> Images { get; } = new List<Image>(); // Navigation collection
-    public ICollection<Member> Members { get; } = new List<Member>(); // Navigation collection
+    public ICollection<Image> Images { get; set; } = new List<Image>(); // Navigation collection
+    public ICollection<Member> Members { get; set; } = new List<Member>(); // Navigation collection
     public ICollection<Milestone> Milestones { get; } = new List<Milestone>(); // Navigation collection
 }
 

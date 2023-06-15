@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ZDrive.Data;
+using ZDrive.Extensions;
 using ZDrive.Models;
 using ZDrive.Services;
 
@@ -22,19 +24,26 @@ public class ProjectController : ControllerBase
         if ((await _context.Projects.FirstOrDefaultAsync(p => p.Name == project.Name)) != null)
             return Results.Conflict();
 
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+
         var newProject = new Project
         {
             Name = project.Name,
             Description = project.Description,
             StartDate = project.StartDate,
             EndDate = project.EndDate,
-            UserId = project.UserId // 나중에 고쳐야함
+            Status = project.Status,
+            Genre = project.Genre,
+            Engine = project.Engine,
+            FileSrc = project.FileSrc,
+            UserId = int.Parse(sid)
         };
 
         await _context.Projects.AddAsync(newProject);
         await _context.SaveChangesAsync();
 
-        return Results.Created($"/calendar/{newProject.Id}", project);
+        return Results.Created($"/project/{newProject.Id}", project);
     }
 
     [HttpDelete("{id}")]
@@ -44,7 +53,9 @@ public class ProjectController : ControllerBase
         if (_project == null)
             return Results.NotFound();
 
-        // Fix me: 프로젝트 Owner만 프로젝트 삭제 편집 가능하게 해야함
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+        if (sid != _project.UserId.ToString()) return Results.Forbid();
 
         _context.Projects.Remove(_project);
         await _context.SaveChangesAsync();
@@ -54,7 +65,8 @@ public class ProjectController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IResult> Read(int index)
     {
-        var project = await _context.Projects.FindAsync(index);
+        var project = await _context.Projects.Include(p => p.Members)
+            .FirstOrDefaultAsync(p => p.Id == index);
         return project == null ? Results.NotFound() : Results.Ok(project);
     }
 
@@ -71,17 +83,102 @@ public class ProjectController : ControllerBase
     {
         var _project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
 
-        if (_project is null) return TypedResults.NotFound();
+        if (_project is null) return Results.NotFound();
 
-        // Fix me: 프로젝트 Owner만 프로젝트 삭제 편집 가능하게 해야함
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+        if (sid != _project.UserId.ToString()) return Results.Forbid();
 
         _project.Name = project.Name;
         _project.Description = project.Description;
         _project.StartDate = project.StartDate;
         _project.EndDate = project.EndDate;
+        _project.Status = project.Status;
+        _project.Genre = project.Genre;
+        _project.Engine = project.Engine;
+        _project.FileSrc = project.FileSrc;
 
         await _context.SaveChangesAsync();
+        return Results.Created($"/calendar/{_project.Id}", _project);
+    }
 
-        return TypedResults.Created($"/calendar/{_project.Id}", _project);
+    [Route("member")]
+    [HttpPost("{id}")]
+    public async Task<IResult> AddMembers(int id, Member[] members)
+    {
+        var _project = await _context.Projects
+            .Include(e => e.Members).FirstOrDefaultAsync(e => e.Id == id);
+        if (_project == null) return Results.NotFound();
+
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+        if (sid != _project.UserId.ToString()) return Results.Forbid();
+
+        foreach (var member in members)
+        {
+            var studentNum = await _context.StudentNums.FindAsync(member.StudentNumber);
+            if (studentNum == null)
+            {
+                _context.RevertChanges();
+                return Results.NotFound();
+            }
+
+            if (_project.Members.FirstOrDefault
+                (
+                    m => m.StudentNumber == member.StudentNumber && m.Role == member.Role
+                ) != null)
+            {
+                _context.RevertChanges();
+                return Results.Conflict();
+            }
+
+            var newMember = new Member
+            {
+                ProjectId = id,
+                StudentNumber = member.StudentNumber,
+                Index = member.Index,
+                Role = member.Role,
+                Description = member.Description
+            };
+
+            await _context.Members.AddAsync(newMember);
+        }
+
+        await _context.SaveChangesAsync();
+        return Results.Created<Project>($"/project/member/{id}", _project);
+    }
+
+    [Route("member")]
+    [HttpPut("{id}")]
+    public async Task<IResult> UpdateMember(int id, Member member)
+    {
+        var _member = await _context.Members.FindAsync(id);
+        if (_member == null) return Results.NotFound();
+
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+        if (sid != _member.ProjectId.ToString()) return Results.Forbid();
+
+        _member.Description = member.Description;
+        _member.Index = member.Index;
+
+        await _context.SaveChangesAsync();
+        return Results.Created($"/project/member/{id}", member);
+    }
+
+    [Route("member")]
+    [HttpDelete("{id}")]
+    public async Task<IResult> DeleteMember(int id)
+    {
+        var _member = await _context.Members.FindAsync(id);
+        if (_member == null) return Results.NotFound();
+
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+        if (sid != _member.ProjectId.ToString()) return Results.Forbid();
+
+        _context.Members.Remove(_member);
+        await _context.SaveChangesAsync();
+        return Results.Ok(_member);
     }
 }
