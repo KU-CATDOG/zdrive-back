@@ -39,14 +39,15 @@ public class AuthController : ControllerBase
         if (GeneratePasswordHash(login.Password, _user.Salt) != _user.PasswordHash) return Results.NotFound();
         if (!_user.IsVerified) return Results.Forbid();
 
-        _session.AddSession(_user.Id, out var ssid);
-
-        Response.Cookies.Append("sessionId", ssid.ToString(), new CookieOptions
+        if (_session.AddSession(_user.Id, out var ssid))
         {
-            SameSite = SameSiteMode.None, // 프로덕션 환경에서는 Lax로 설정해야함
-            Secure = true,
-            HttpOnly = true
-        });
+            Response.Cookies.Append("sessionId", ssid.ToString(), new CookieOptions
+            {
+                SameSite = SameSiteMode.None, // 프로덕션 환경에서는 Lax로 설정해야함
+                Secure = true,
+                HttpOnly = true
+            });
+        }
 
         return Results.Ok();
     }

@@ -25,12 +25,6 @@ public class SessionStorage : ISessionStorage
     public bool AddSession(int userId, out Guid ssid)
     {
         RemoveExpiredUser();
-        
-        if (FindUserById(userId))
-        {
-            ssid = default;
-            return false;
-        }
 
         ssid = Guid.NewGuid();
         _session[ssid] = new Session(userId, DateTime.Now.Add(expires));
@@ -41,12 +35,6 @@ public class SessionStorage : ISessionStorage
     public bool AddSession(int userId, Authority authority, out Guid ssid)
     {
         RemoveExpiredUser();
-
-        if (FindUserById(userId))
-        {
-            ssid = default;
-            return false;
-        }
 
         ssid = Guid.NewGuid();
         _session[ssid] = new Session(userId, authority, DateTime.Now.Add(expires));

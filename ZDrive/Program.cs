@@ -31,9 +31,10 @@ if (app.Environment.IsDevelopment())
     Console.WriteLine("CORS: AllowAnyOrigin");
     app.UseCors(options =>
     {
-        options.AllowAnyOrigin();
+        options.WithOrigins("https://mer.kucatdog.net", "http://localhost:3001", "http://localhost:3332");
         options.AllowAnyHeader();
         options.AllowAnyMethod();
+        options.AllowCredentials();
     });
 }
 

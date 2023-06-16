@@ -23,22 +23,6 @@ public class SessionStorageTest
     }
 
     [Test]
-    public void AddSession_ExistUser_ReturnsFalse()
-    {
-        // Arrange
-        var sessionStorage = CreateSessionStorage();
-        var userId = 1;
-        sessionStorage.AddSession(userId, out var ssid1);
-
-        // Act
-        var ret = sessionStorage.AddSession(userId, out var ssid2);
-
-        // Assert
-        Assert.IsFalse(ret);
-        Assert.AreEqual(default(Guid), ssid2);
-    }
-
-    [Test]
     public void AddSession_ExpiredUser_ShouldBeRemoved()
     {
         // Arrange
