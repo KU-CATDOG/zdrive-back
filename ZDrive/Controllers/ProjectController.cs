@@ -45,7 +45,7 @@ public class ProjectController : ControllerBase
         await _context.Projects.AddAsync(newProject);
         await _context.SaveChangesAsync();
 
-        return Results.Created($"/project/{newProject.Id}", project);
+        return Results.Created($"/project/{newProject.Id}", newProject);
     }
 
     [HttpDelete("{id}")]
@@ -165,7 +165,7 @@ public class ProjectController : ControllerBase
         _member.Index = member.Index;
 
         await _context.SaveChangesAsync();
-        return Results.Created($"/project/member/{id}", member);
+        return Results.Created($"/project/member/{id}", _member);
     }
 
     [Route("member")]
