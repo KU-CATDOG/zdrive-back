@@ -9,6 +9,8 @@ using ZDrive.Services;
 
 namespace ZDrive.Controllers;
 
+[ApiController]
+[Route("[controller]")]
 public class ProjectController : ControllerBase
 {
     private readonly ZDriveDbContext _context;
@@ -19,7 +21,7 @@ public class ProjectController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IResult> Create(Project project)
+    public async Task<IResult> Create(ProjectInformation project)
     {
         if ((await _context.Projects.FirstOrDefaultAsync(p => p.Name == project.Name)) != null)
             return Results.Conflict();
@@ -43,7 +45,7 @@ public class ProjectController : ControllerBase
         await _context.Projects.AddAsync(newProject);
         await _context.SaveChangesAsync();
 
-        return Results.Created($"/project/{newProject.Id}", project);
+        return Results.Created($"/project/{newProject.Id}", newProject);
     }
 
     [HttpDelete("{id}")]
@@ -79,7 +81,7 @@ public class ProjectController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IResult> Update(int id, Project project)
+    public async Task<IResult> Update(int id, ProjectInformation project)
     {
         var _project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
 
@@ -104,7 +106,7 @@ public class ProjectController : ControllerBase
 
     [Route("member")]
     [HttpPost("{id}")]
-    public async Task<IResult> AddMembers(int id, Member[] members)
+    public async Task<IResult> AddMembers(int id, MemberInformation[] members)
     {
         var _project = await _context.Projects
             .Include(e => e.Members).FirstOrDefaultAsync(e => e.Id == id);
@@ -150,7 +152,7 @@ public class ProjectController : ControllerBase
 
     [Route("member")]
     [HttpPut("{id}")]
-    public async Task<IResult> UpdateMember(int id, Member member)
+    public async Task<IResult> UpdateMember(int id, MemberInformation member)
     {
         var _member = await _context.Members.FindAsync(id);
         if (_member == null) return Results.NotFound();
@@ -163,7 +165,7 @@ public class ProjectController : ControllerBase
         _member.Index = member.Index;
 
         await _context.SaveChangesAsync();
-        return Results.Created($"/project/member/{id}", member);
+        return Results.Created($"/project/member/{id}", _member);
     }
 
     [Route("member")]

@@ -20,9 +20,8 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var project = new Project
+        var project = new ProjectInformation
         {
-            Id = 2,
             Name = "Baba Is You",
             UserId = 1
         };
@@ -40,9 +39,8 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var project = new Project
+        var project = new ProjectInformation
         {
-            Id = 2,
             Name = "TEST",
             UserId = 1
         };
@@ -110,7 +108,7 @@ public class ProjectControllerTest
     public async Task Update_NonProjectId_ReturnsNotFoundCode()
     {
         // Arrange
-        var project = new Project
+        var project = new ProjectInformation
         {
             Name = "Baba Is You"
         };
@@ -128,7 +126,7 @@ public class ProjectControllerTest
     public async Task Update_ExistProjectId_ShouldUpdateProject()
     {
         // Arrange
-        var project = new Project
+        var project = new ProjectInformation
         {
             Name = "Baba Is You",
             Description = "Baba Is You!"
@@ -148,7 +146,7 @@ public class ProjectControllerTest
     public async Task Update_UserThatIsNotOwner_ReturnsForbidStatusCode()
     {
         // Arrange
-        var project = new Project
+        var project = new ProjectInformation
         {
             Name = "Baba Is You",
             Description = "Baba Is You!"
@@ -167,7 +165,7 @@ public class ProjectControllerTest
     public async Task AddMembers_NonProjectId_ReturnsNotFoundStatusCode()
     {
         // Arrange
-        var members = new Member[]
+        var members = new MemberInformation[]
         {
         };
         using var context = testDbCreater.Create();
@@ -185,9 +183,9 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var members = new Member[]
+        var members = new MemberInformation[]
         {
-            new Member
+            new MemberInformation
             {
                 StudentNumber = "2021320006",
                 Role = Role.Programmer
@@ -209,11 +207,10 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var members = new Member[]
+        var members = new MemberInformation[]
         {
-            new Member
+            new MemberInformation
             {
-                Id = 2,
                 StudentNumber = "2021320003",
                 Role = Role.GameDesigner
             }
@@ -234,11 +231,10 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var members = new Member[] 
+        var members = new MemberInformation[] 
         {
-            new Member
+            new MemberInformation
             {
-                Id = 2,
                 StudentNumber = "2021320003",
                 Role = Role.GameDesigner
             }
@@ -259,9 +255,9 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var members = new Member[]
+        var members = new MemberInformation[]
         {
-            new Member
+            new MemberInformation
             {
                 StudentNumber = "2021320003",
                 Role = Role.Programmer
@@ -281,9 +277,9 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var members = new Member[]
+        var members = new MemberInformation[]
         {
-            new Member
+            new MemberInformation
             {
                 StudentNumber = "2021320003",
                 Role = Role.GameDesigner
@@ -303,7 +299,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var member = new Member
+        var member = new MemberInformation
         {
             Description = "Unit Test"
         };
@@ -321,7 +317,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var member = new Member
+        var member = new MemberInformation
         {
             Description = "Unit Test"
         };
@@ -339,7 +335,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var member = new Member
+        var member = new MemberInformation
         {
             Description = "Unit Test"
         };
