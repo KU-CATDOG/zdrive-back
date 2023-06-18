@@ -65,10 +65,10 @@ public class ProjectController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IResult> Read(int index)
+    public async Task<IResult> Read(int id)
     {
         var project = await _context.Projects.Include(p => p.Members)
-            .FirstOrDefaultAsync(p => p.Id == index);
+            .FirstOrDefaultAsync(p => p.Id == id);
         return project == null ? Results.NotFound() : Results.Ok(project);
     }
 
