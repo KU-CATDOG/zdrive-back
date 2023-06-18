@@ -105,7 +105,7 @@ public class ProjectController : ControllerBase
     }
 
     [Route("member")]
-    [HttpPost("{id}")]
+    [HttpPost("member/{id}")]
     public async Task<IResult> AddMembers(int id, MemberInformation[] members)
     {
         var _project = await _context.Projects
@@ -151,7 +151,7 @@ public class ProjectController : ControllerBase
     }
 
     [Route("member")]
-    [HttpPut("{id}")]
+    [HttpPut("member/{id}")]
     public async Task<IResult> UpdateMember(int id, MemberInformation member)
     {
         var _member = await _context.Members.FindAsync(id);
@@ -169,7 +169,7 @@ public class ProjectController : ControllerBase
     }
 
     [Route("member")]
-    [HttpDelete("{id}")]
+    [HttpDelete("member/{id}")]
     public async Task<IResult> DeleteMember(int id)
     {
         var _member = await _context.Members.FindAsync(id);
