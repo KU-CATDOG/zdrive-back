@@ -99,15 +99,6 @@ public class SessionStorage : ISessionStorage
         else return false;
     }
 
-    private void Print()
-    {
-        Console.WriteLine("Session List:");
-        foreach (var kv in _session)
-        {
-            Console.WriteLine($"SSID: {kv.Key.ToString()}, UserId: {kv.Value.Id}, Expires: {kv.Value.Expires}");
-        }
-    }
-
     private void RemoveExpiredUser()
     {
         List<Guid> buffer = new List<Guid>();

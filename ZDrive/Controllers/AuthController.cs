@@ -46,8 +46,10 @@ public class AuthController : ControllerBase
                 HttpOnly = true
             });
         }
+        
+        var userData = new UserData(_user);
 
-        return Results.Ok();
+        return Results.Ok<UserData>(userData);
     }
 
     [Route("logout")]
@@ -104,7 +106,9 @@ public class AuthController : ControllerBase
         await _context.Users.AddAsync(newUser);
         await _context.SaveChangesAsync();
 
-        return Results.Created($"/auth/register/{newUser.Id}", newUser);
+        var userData = new UserData(newUser);
+
+        return Results.Created($"/auth/register/{newUser.Id}", userData);
     }
 
     [Route("remove")]

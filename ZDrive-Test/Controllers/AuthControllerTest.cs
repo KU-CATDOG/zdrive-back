@@ -50,9 +50,12 @@ public class AuthControllerTest
         };
 
         var ret = await controller.Login(user);
+        var data = (Microsoft.AspNetCore.Http.HttpResults.Ok<UserData>)ret;
 
         // Assert
-        Assert.That(ret, Is.EqualTo(Results.Ok()));
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Ok<UserData>)));
+        Assert.That(data, Is.Not.Null);
+        Assert.That(data.Value?.StudentNumber, Is.EqualTo("2020320124"));
         Assert.That(mockSessionStorage.Object.Session.Count, Is.EqualTo(1));
     }
 
@@ -206,11 +209,16 @@ public class AuthControllerTest
 
         // Act
         var ret = await controller.Register(registration);
+        var data = (Microsoft.AspNetCore.Http.HttpResults.Created<UserData>)ret;
 
         // Assert
-        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Created<User>)));
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Created<UserData>)));
         Assert.That(context.StudentNums.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
         Assert.That(context.Users.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
+
+        Assert.That(data, Is.Not.Null);
+        Assert.That(data.Value?.StudentNumber, Is.EqualTo("2021320006"));
+        Assert.That(data.Value?.Name, Is.EqualTo("Minjong"));
     }
 
     [Test]
