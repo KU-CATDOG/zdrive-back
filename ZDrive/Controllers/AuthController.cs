@@ -22,12 +22,10 @@ public class AuthController : ControllerBase
         _session = session;
     }
 
-    [Route("test")]
+    [Route("check")]
     [HttpGet]
-    public string Test()
-    {
-        return GeneratePasswordHash("password", "realtest");
-    }
+    public IResult Test()
+        => Results.Ok();
 
     [Route("login")]
     [HttpPost]
