@@ -51,8 +51,8 @@ public class ProjectControllerTest
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Created<Project>)));
-        Assert.That(context.Projects.Find(2), Is.Not.Null);
-        Assert.That(context.Projects.Find(2)?.Name, Is.EqualTo(project.Name));
+        Assert.That(context.Projects.Find(3), Is.Not.Null);
+        Assert.That(context.Projects.Find(3)?.Name, Is.EqualTo(project.Name));
     }
 
     [Test]
@@ -64,6 +64,20 @@ public class ProjectControllerTest
 
         // Act
         var ret = await controller.Read(17);
+
+        // Assert
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.NotFound)));
+    }
+
+    [Test]
+    public async Task Read_UnauthenticatedUserReadPrivateProject_ReturnsNotFoundStatus()
+    {
+        // Arrange
+        using var context = testDbCreater.Create();
+        var controller = CreateUnauthenticatedController(context);
+
+        // Act
+        var ret = await controller.Read(1);
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.NotFound)));
@@ -88,7 +102,7 @@ public class ProjectControllerTest
     }
 
     [Test]
-    public async Task ReadAllProject_ReturnsAllProjects()
+    public async Task ReadAllProject_AuthenticatedUser_ReturnsAllProjects()
     {
         // Arrange
         using var context = testDbCreater.Create();
@@ -105,6 +119,23 @@ public class ProjectControllerTest
     }
 
     [Test]
+    public async Task ReadAllProject_UnauthenticatedUser_ReturnsPublicProjects()
+    {
+        // Arrange
+        using var context = testDbCreater.Create();
+        var controller = CreateUnauthenticatedController(context);
+
+        // Act
+        var ret = await controller.ReadAllProject();
+
+        // Assert
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Ok<List<Project>>)));
+        var value = (ret as Microsoft.AspNetCore.Http.HttpResults.Ok<List<Project>>)?.Value;
+        Assert.That(value, Is.Not.Null);
+        Assert.That(value?.Count, Is.EqualTo(1));
+    }
+
+    [Test]
     public async Task Update_NonProjectId_ReturnsNotFoundCode()
     {
         // Arrange
@@ -113,7 +144,7 @@ public class ProjectControllerTest
         var controller = CreateController(context);
 
         // Act
-        var ret = await controller.Update(2, project);
+        var ret = await controller.Update(3, project);
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.NotFound)));
@@ -165,7 +196,7 @@ public class ProjectControllerTest
         var controller = CreateController(context);
 
         // Act
-        var ret = await controller.AddMembers(2, members);
+        var ret = await controller.AddMembers(3, members);
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.NotFound)));
@@ -223,7 +254,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var members = new Member[] 
+        var members = new Member[]
         {
             new TestDataBuilder<Member>()
             .Randomize()
@@ -269,7 +300,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var members = new Member[] {};
+        var members = new Member[] { };
         var controller = CreateController(context, 2);
 
         // Act
@@ -376,7 +407,7 @@ public class ProjectControllerTest
         var controller = CreateController(context);
 
         // Act
-        var ret = await controller.Delete(2);
+        var ret = await controller.Delete(3);
 
         // Assert
         Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.NotFound)));
@@ -415,7 +446,7 @@ public class ProjectControllerTest
     public void SetUp()
     {
         testDbCreater = new TestDbContextCreater();
-        testDbCreater.Setup(c => 
+        testDbCreater.Setup(c =>
         {
             c.Users.AddRange(fakeUserList);
             c.StudentNums.AddRange(fakeStdNumList);
@@ -435,10 +466,25 @@ public class ProjectControllerTest
     {
         var controller = new ProjectController(context);
 
-        var claims = new[] { 
+        var claims = new[] {
             new Claim(ClaimTypes.Sid, userId.ToString()),
             new Claim(ClaimTypes.Role, Authority.User.ToString()) };
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "Tokens"));
+
+        var contextMock = new Mock<HttpContext>();
+        contextMock.SetupProperty(ctx => ctx.User, principal);
+
+        var controllerContextMock = new ControllerContext();
+        controllerContextMock.HttpContext = contextMock.Object;
+
+        controller.ControllerContext = controllerContextMock;
+        return controller;
+    }
+
+    private ProjectController CreateUnauthenticatedController(ZDriveDbContext context)
+    {
+        var controller = new ProjectController(context);
+        var principal = new ClaimsPrincipal();
 
         var contextMock = new Mock<HttpContext>();
         contextMock.SetupProperty(ctx => ctx.User, principal);
@@ -495,7 +541,18 @@ public class ProjectControllerTest
             Description = "Test game project",
             StartDate = DateTime.Now,
             EndDate = DateTime.Now.AddDays(30),
-            UserId = 1
+            UserId = 1,
+            Visibility = Visibility.Private
+        },
+        new Project
+        {
+            Id = 2,
+            Name = "You Is Baba",
+            Description = "Test game project",
+            StartDate = DateTime.Now,
+            EndDate = DateTime.Now.AddDays(30),
+            UserId = 1,
+            Visibility = Visibility.Public
         }
     };
 

@@ -234,3 +234,4 @@ AppPackages/
 !/**/appsettings.*.base
 log/
 logs/
+ZDrive-Test/coverage.json

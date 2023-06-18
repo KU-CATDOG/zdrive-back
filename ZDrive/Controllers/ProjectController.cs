@@ -56,17 +56,39 @@ public class ProjectController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IResult> Read(int index)
     {
-        var project = await _context.Projects.Include(p => p.Members)
-            .FirstOrDefaultAsync(p => p.Id == index);
-        return project == null ? Results.NotFound() : Results.Ok(project);
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null)
+        {
+            var project = await _context.Projects.Include(p => p.Members)
+                .FirstOrDefaultAsync(p => p.Id == index);
+            return (project == null || project.Visibility == Visibility.Private) ? Results.NotFound() : Results.Ok(project);
+        }
+        else
+        {
+            var project = await _context.Projects.Include(p => p.Members)
+                .FirstOrDefaultAsync(p => p.Id == index);
+            return project == null ? Results.NotFound() : Results.Ok(project);
+        }
     }
 
     [Route("list")]
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IResult> ReadAllProject()
     {
-        var projects = await _context.Projects.ToListAsync();
-        return Results.Ok(projects);
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null)
+        {
+            var projects = await _context.Projects
+                .Where(p => p.Visibility == Visibility.Public)
+                .ToListAsync();
+            return Results.Ok(projects);
+        }
+        else
+        {
+            var projects = await _context.Projects.ToListAsync();
+            return Results.Ok(projects);
+        }
     }
 
     [HttpPut("{id}")]
@@ -79,7 +101,7 @@ public class ProjectController : ControllerBase
         var sid = User.FindFirstValue(ClaimTypes.Sid);
         if (sid == null) return Results.Unauthorized();
         if (sid != _project.UserId.ToString()) return Results.Forbid();
-        
+
         _project.Copy(project);
 
         await _context.SaveChangesAsync();
