@@ -7,12 +7,10 @@ public interface ISessionStorage
 {
     ReadOnlyDictionary<Guid, Session> Session { get; }
 
-    bool AddSession(int userId, out Guid ssid);
-    bool AddSession(int userId, Authority authority, out Guid ssid);
-    bool AddSession(int userId, DateTime dateTime, out Guid ssid1);
+    bool AddSession(UserData userData, out Guid ssid, DateTime dateTime = default);
     bool TryGetUser(Guid guid, out Session session);
     void RemoveUser(Guid guid);
-    void RemoveUser(int userId);
+    void RemoveUser(UserData userData);
 }
 
 public class SessionStorage : ISessionStorage
@@ -22,49 +20,15 @@ public class SessionStorage : ISessionStorage
 
     public ReadOnlyDictionary<Guid, Session> Session => _session.AsReadOnly();
 
-    public bool AddSession(int userId, out Guid ssid)
+    public bool AddSession(UserData userData, out Guid ssid, DateTime dateTime = default)
     {
         RemoveExpiredUser();
 
         ssid = Guid.NewGuid();
-        _session[ssid] = new Session(userId, DateTime.Now.Add(expires));
+        _session[ssid] = 
+            new Session(userData, dateTime == default ? DateTime.Now.Add(expires) : dateTime);
 
         return true;
-    }
-
-    public bool AddSession(int userId, Authority authority, out Guid ssid)
-    {
-        RemoveExpiredUser();
-
-        ssid = Guid.NewGuid();
-        _session[ssid] = new Session(userId, authority, DateTime.Now.Add(expires));
-
-        return true;
-    }
-
-    public bool AddSession(int userId, DateTime dateTime, out Guid ssid)
-    {
-        RemoveExpiredUser();
-
-        if (FindUserById(userId))
-        {
-            ssid = default;
-            return false;
-        }
-
-        ssid = Guid.NewGuid();
-        _session[ssid] = new Session(userId, dateTime);
-
-        return true;
-    }
-
-    private bool FindUserById(int userId)
-    {
-        foreach (var v in _session.Values)
-            if (v.Id == userId)
-                return true;
-
-        return false;
     }
 
     public void RemoveUser(Guid ssid)
@@ -73,12 +37,12 @@ public class SessionStorage : ISessionStorage
         var ret = _session.Remove(ssid);
     }
 
-    public void RemoveUser(int userId)
+    public void RemoveUser(UserData userData)
     {
         var buffer = new List<Guid>();
         foreach (var kv in _session)
         {
-            if (kv.Value.Id == userId) buffer.Add(kv.Key);
+            if (kv.Value.Data == userData) buffer.Add(kv.Key);
         }
         foreach (var k in buffer)
         {
@@ -117,21 +81,13 @@ public class SessionStorage : ISessionStorage
 
 public struct Session
 {
-    public int Id;
+    public UserData Data;
     public DateTime Expires;
-    public Authority Authority = 0;
 
-    public Session(int _Id, DateTime _Expires)
+    public Session(UserData data, DateTime _Expires)
     {
-        Id = _Id;
+        Data = data;
         Expires = _Expires;
-    }
-
-    public Session(int _Id, Authority _Authority, DateTime _Expires)
-    {
-        Id = _Id;
-        Expires = _Expires;
-        Authority = _Authority;
     }
 
     public bool IsExpired()

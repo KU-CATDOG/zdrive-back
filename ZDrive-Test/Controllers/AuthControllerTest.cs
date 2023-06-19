@@ -36,8 +36,8 @@ public class AuthControllerTest
         var ssid = Guid.NewGuid();
 
         mockSessionStorage.Setup(x => x.Session).Returns(dict.AsReadOnly());
-        mockSessionStorage.Setup(x => x.AddSession(2, out ssid))
-            .Returns(() => { dict[ssid] = new Session(2, DateTime.Now); return true; });
+        mockSessionStorage.Setup(x => x.AddSession(UserData.User(fakeUserList[1]), out ssid, default))
+            .Returns(() => { dict[ssid] = new Session(UserData.User(fakeUserList[1]), DateTime.Now); return true; });
 
         using var context = testDbContextCreater.Create();
         var controller = CreateAuthController(context);
@@ -130,7 +130,7 @@ public class AuthControllerTest
             .Callback(() => dict.Remove(ssid));
         mockHttpRequest.Setup(x => x.Cookies["sessionId"]).Returns(ssid.ToString());
 
-        dict[ssid] = new Session(2, DateTime.Now);
+        dict[ssid] = new Session(UserData.User(fakeUserList[1]), DateTime.Now);
         
         using var context = testDbContextCreater.Create();
         var controller = CreateAuthController(context);
@@ -155,7 +155,7 @@ public class AuthControllerTest
             .Callback(() => throw new KeyNotFoundException());
         mockHttpRequest.Setup(x => x.Cookies["sessionId"]).Returns(newSsid.ToString());
 
-        dict[ssid] = new Session(2, DateTime.Now);
+        dict[ssid] = new Session(UserData.User(fakeUserList[1]), DateTime.Now);
 
         using var context = testDbContextCreater.Create();
         var controller = CreateAuthController(context);
@@ -179,7 +179,7 @@ public class AuthControllerTest
             .Callback(() => dict.Remove(ssid));
         mockHttpRequest.Setup(x => x.Cookies["sessionId"]).Returns("InvalidSSID");
 
-        dict[ssid] = new Session(2, DateTime.Now);
+        dict[ssid] = new Session(UserData.User(fakeUserList[1]), DateTime.Now);
 
         using var context = testDbContextCreater.Create();
         var controller = CreateAuthController(context);
@@ -248,9 +248,9 @@ public class AuthControllerTest
     {
         // Arrange
         var ssid = Guid.NewGuid();
-        var session = new Dictionary<Guid, Session> { { ssid, new Session(2, DateTime.Now) } };
+        var session = new Dictionary<Guid, Session> { { ssid, new Session(UserData.User(fakeUserList[1]), DateTime.Now) } };
 
-        mockSessionStorage.Setup(x => x.RemoveUser(2))
+        mockSessionStorage.Setup(x => x.RemoveUser(UserData.User(fakeUserList[1])))
             .Callback(() => { session.Remove(ssid); });
 
         var user = new Login

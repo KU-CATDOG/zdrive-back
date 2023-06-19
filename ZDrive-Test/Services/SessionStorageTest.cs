@@ -1,3 +1,4 @@
+using ZDrive.Models;
 using ZDrive.Services;
 
 namespace ZDrive_Test;
@@ -7,15 +8,18 @@ public class SessionStorageTest
     private ISessionStorage CreateSessionStorage()
         => new SessionStorage();
 
+    private User CreateRandomUser()
+        => new TestDataBuilder<User>().Randomize().Build();
+
     [Test]
     public void AddSession_NewUser_ShouldBeSavedInDictionary()
     {
         // Arrange
         var sessionStorage = CreateSessionStorage();
-        var userId = 1;
+        var userData = new UserData(CreateRandomUser());
 
         // Act
-        var ret = sessionStorage.AddSession(userId, out var ssid);
+        var ret = sessionStorage.AddSession(userData, out var ssid);
 
         // Assert
         Assert.IsTrue(ret);
@@ -27,14 +31,14 @@ public class SessionStorageTest
     {
         // Arrange
         var sessionStorage = CreateSessionStorage();
-        var userId = 1;
-        sessionStorage.AddSession(userId, DateTime.Now.AddHours(-1), out var ssid1);
+        var userData = new UserData(CreateRandomUser());
 
         // Act
-        sessionStorage.AddSession(userId + 1, out var ssid2);
+        sessionStorage.AddSession(userData, out var ssid, DateTime.Now.AddHours(-1));
+        sessionStorage.AddSession(userData, out var ssid2);
 
         // Assert
-        Assert.False(sessionStorage.Session.ContainsKey(ssid1));
+        Assert.False(sessionStorage.Session.ContainsKey(ssid));
     }
 
     [Test]
@@ -42,14 +46,14 @@ public class SessionStorageTest
     {
         // Arrange
         var sessionStorage = CreateSessionStorage();
-        var userId = 1;
+        var userData = new UserData(CreateRandomUser());
 
         // Act
-        sessionStorage.AddSession(userId, out var ssid1);
+        sessionStorage.AddSession(userData, out var ssid1);
 
         // Assert
         Assert.True(sessionStorage.TryGetUser(ssid1, out var ret));
-        Assert.AreEqual(userId, ret.Id);
+        Assert.AreEqual(userData, ret.Data);
     }
 
     [Test]
@@ -60,7 +64,7 @@ public class SessionStorageTest
 
         // Assert
         Assert.False(sessionStorage.TryGetUser(Guid.NewGuid(), out var ret));
-        Assert.AreEqual(default(int), ret.Id);
+        Assert.AreEqual(default(UserData), ret.Data);
     }
 
     [Test]
@@ -68,14 +72,14 @@ public class SessionStorageTest
     {
         // Arrange
         var sessionStorage = CreateSessionStorage();
-        var userId = 1;
+        var userData = new UserData(CreateRandomUser());
 
         // Act
-        sessionStorage.AddSession(userId, DateTime.Now.AddHours(-1), out var ssid1);
+        sessionStorage.AddSession(userData, out var ssid1, DateTime.Now.AddHours(-1));
 
         // Assert
         Assert.False(sessionStorage.TryGetUser(ssid1, out var ret));
-        Assert.AreEqual(default(int), ret.Id);
+        Assert.AreEqual(default(UserData), ret.Data);
     }
 
     [Test]
@@ -83,8 +87,8 @@ public class SessionStorageTest
     {
         // Arrange
         var sessionStorage = CreateSessionStorage();
-        var userId = 1;
-        sessionStorage.AddSession(userId, out var ssid);
+        var userData = new UserData(CreateRandomUser());
+        sessionStorage.AddSession(userData, out var ssid);
 
         // Act
         sessionStorage.RemoveUser(ssid);
@@ -98,11 +102,11 @@ public class SessionStorageTest
     {
         // Arrange
         var sessionStorage = CreateSessionStorage();
-        var userId = 1;
-        sessionStorage.AddSession(userId, out var ssid);
+        var userData = new UserData(CreateRandomUser());
+        sessionStorage.AddSession(userData, out var ssid);
 
         // Act
-        sessionStorage.RemoveUser(userId);
+        sessionStorage.RemoveUser(userData);
 
         // Assert
         Assert.False(sessionStorage.Session.ContainsKey(ssid));

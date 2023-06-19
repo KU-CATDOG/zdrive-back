@@ -14,4 +14,7 @@ public record UserData
         this.Name = user.Name;
         this.Authority = user.Authority;
     }
+
+    public static UserData User(User user)
+        => new UserData(user);
 }

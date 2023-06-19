@@ -37,7 +37,7 @@ public class AuthController : ControllerBase
         if (GeneratePasswordHash(login.Password, _user.Salt) != _user.PasswordHash) return Results.NotFound();
         if (!_user.IsVerified) return Results.Forbid();
 
-        if (_session.AddSession(_user.Id, out var ssid))
+        if (_session.AddSession(UserData.User(_user), out var ssid))
         {
             Response.Cookies.Append("sessionId", ssid.ToString(), new CookieOptions
             {
@@ -47,7 +47,7 @@ public class AuthController : ControllerBase
             });
         }
         
-        var userData = new UserData(_user);
+        var userData = UserData.User(_user);
 
         return Results.Ok<UserData>(userData);
     }
@@ -106,7 +106,7 @@ public class AuthController : ControllerBase
         await _context.Users.AddAsync(newUser);
         await _context.SaveChangesAsync();
 
-        var userData = new UserData(newUser);
+        var userData = UserData.User(newUser);
 
         return Results.Created($"/auth/register/{newUser.Id}", userData);
     }
@@ -120,7 +120,7 @@ public class AuthController : ControllerBase
         if (_user.PasswordHash != GeneratePasswordHash(login.Password, _user.Salt)) 
             return Results.NotFound();
 
-        _session.RemoveUser(_user.Id);
+        _session.RemoveUser(UserData.User(_user));
         _context.Users.Remove(_user);
         await _context.SaveChangesAsync();
 
