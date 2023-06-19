@@ -13,10 +13,14 @@ public record Period
 
     public Period(string str)
     {
+        var semester = (int.Parse(str.Substring(str.IndexOf('-') + 1)) - 1);
+        if (semester > 2) throw new FormatException();
         Year = int.Parse(str.Substring(0, str.IndexOf('-')));
-        Semester = (Semester)(int.Parse(str.Substring(str.IndexOf('-') + 1)) - 1);
+        Semester = (Semester)semester;
     }
 
+    // IQueryable에는 특정 메소드만 사용 가능해서 이 메소드는 쿼리 추출에 사용 불가능함
+    // 개에바네
     public bool IsWithInPeriod(DateTime date)
     {
         if (Semester == Semester.First)

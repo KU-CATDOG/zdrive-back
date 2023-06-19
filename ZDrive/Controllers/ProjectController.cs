@@ -6,6 +6,7 @@ using ZDrive.Data;
 using ZDrive.Extensions;
 using ZDrive.Models;
 using ZDrive.Services;
+using ZDrive.Utils;
 
 namespace ZDrive.Controllers;
 
@@ -76,9 +77,13 @@ public class ProjectController : ControllerBase
     }
 
     [Route("list")]
-    [HttpGet("list/{search}")]
+    [HttpGet("list/{search}/{period}")]
     [AllowAnonymous]
-    public async Task<IResult> ReadAllProject([FromQuery(Name = "search")]string? search = null)
+    public async Task<IResult> ReadAllProject
+    (
+        [FromQuery(Name = "search")]string? search = null,
+        [FromQuery(Name = "period")]string? period = null
+    )
     {
         var projects = from p in _context.Projects
             select p;
@@ -87,6 +92,25 @@ public class ProjectController : ControllerBase
         {
             projects = projects
                 .Where(p => p.Name.Contains(search));
+        }
+
+        if (!String.IsNullOrEmpty(period))
+        {
+            try
+            {
+                var date = new Period(period);
+                projects = projects
+                    .Where
+                    (
+                        p => p.StartDate != null &&
+                        date.Semester == Semester.First ? (new DateTime(date.Year, 3, 1) < p.StartDate && new DateTime(date.Year, 8, 31) > p.StartDate)
+                            : ( new DateTime(date.Year, 9, 1) < p.StartDate && new DateTime(date.Year + 1, 2, DateTime.IsLeapYear(date.Year) ? 29 : 28) > p.StartDate )
+                    );
+            }
+            catch
+            {
+                return Results.BadRequest();
+            }
         }
 
         var sid = User.FindFirstValue(ClaimTypes.Sid);
