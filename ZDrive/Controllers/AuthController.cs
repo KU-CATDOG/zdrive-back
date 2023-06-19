@@ -49,7 +49,7 @@ public class AuthController : ControllerBase
         
         var userData = UserData.User(_user);
 
-        return Results.Ok<UserData>(userData);
+        return Results.Ok(userData);
     }
 
     [Route("logout")]
