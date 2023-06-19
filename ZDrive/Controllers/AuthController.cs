@@ -30,7 +30,7 @@ public class AuthController : ControllerBase
         var sid = User.FindFirstValue(ClaimTypes.Sid);
         if (sid == null) return Results.Unauthorized();
 
-        var _user = await _context.Users.FindAsync(sid);
+        var _user = await _context.Users.FindAsync(int.Parse(sid));
         if (_user == null) return Results.NotFound();
 
         var userData = UserData.User(_user);
