@@ -29,7 +29,7 @@ public class User
 
     public bool IsVerified { get; set; } = false;
 
-    public Authority Authority { get; set; } = Authority.Anonymous;
+    public Authority Authority { get; set; } = Authority.User;
 
     public StudentNum StudentNum { get; set; } = null!;
 
@@ -38,7 +38,6 @@ public class User
 
 public enum Authority
 {
-    Anonymous,
     User,
     Administer
 }
