@@ -101,6 +101,23 @@ public class ProjectControllerTest
     }
 
     [Test]
+    public async Task ReadAllProject_SearchString_ReturnsThatProjects()
+    {
+        // Arrange
+        using var context = testDbCreater.Create();
+        var controller = CreateController(context);
+
+        // Act
+        var ret = await controller.ReadAllProject("Is You");
+
+        // Assert
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Ok<List<Project>>)));
+        var value = (ret as Microsoft.AspNetCore.Http.HttpResults.Ok<List<Project>>)?.Value;
+        Assert.That(value, Is.Not.Null);
+        Assert.That(value?.Count, Is.EqualTo(1));
+    }
+
+    [Test]
     public async Task ReadAllProject_AuthenticatedUser_ReturnsAllProjects()
     {
         // Arrange

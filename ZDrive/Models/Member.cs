@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace ZDrive.Models;
@@ -24,6 +25,7 @@ public class Member
 
     public string? Description { get; set; } = string.Empty;
 
+    [JsonIgnore]
     public Project Project { get; set; } = null!;
 
     public StudentNum StudentNum { get; set; } = null!;
