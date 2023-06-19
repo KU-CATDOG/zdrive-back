@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using ZDrive.Data;
@@ -24,8 +25,17 @@ public class AuthController : ControllerBase
 
     [Route("check")]
     [HttpGet]
-    public IResult Test()
-        => Results.Ok();
+    public async Task<IResult> Test()
+    {
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+
+        var _user = await _context.Users.FindAsync(sid);
+        if (_user == null) return Results.NotFound();
+
+        var userData = UserData.User(_user);
+        return Results.Ok(userData);
+    }
 
     [Route("login")]
     [HttpPost]
