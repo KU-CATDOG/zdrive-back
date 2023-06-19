@@ -20,12 +20,14 @@ public class ProjectInformation
 
     public Status Status { get; set; } = Status.NotStarted;
 
-    [StringLength(100)]
-    public string? Genre {get;set;} = string.Empty;
+    public Visibility Visibility { get; set; } = Visibility.Public;
 
     [StringLength(100)]
-    public string? Engine {get;set;} = string.Empty;
+    public string? Genre { get; set; } = string.Empty;
+
+    [StringLength(100)]
+    public string? Engine { get; set; } = string.Empty;
 
     [StringLength(500)]
-    public string? FileSrc {get;set;} = string.Empty;
+    public string? FileSrc { get; set; } = string.Empty;
 }

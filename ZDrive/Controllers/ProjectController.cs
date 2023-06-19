@@ -29,18 +29,9 @@ public class ProjectController : ControllerBase
         var sid = User.FindFirstValue(ClaimTypes.Sid);
         if (sid == null) return Results.Unauthorized();
 
-        var newProject = new Project
-        {
-            Name = project.Name,
-            Description = project.Description,
-            StartDate = project.StartDate,
-            EndDate = project.EndDate,
-            Status = project.Status,
-            Genre = project.Genre,
-            Engine = project.Engine,
-            FileSrc = project.FileSrc,
-            UserId = int.Parse(sid)
-        };
+        var newProject = new Project();
+        newProject.Copy(project);
+        newProject.UserId = int.Parse(sid);
 
         await _context.Projects.AddAsync(newProject);
         await _context.SaveChangesAsync();
@@ -67,17 +58,39 @@ public class ProjectController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IResult> Read(int id)
     {
-        var project = await _context.Projects.Include(p => p.Members)
-            .FirstOrDefaultAsync(p => p.Id == id);
-        return project == null ? Results.NotFound() : Results.Ok(project);
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null)
+        {
+            var project = await _context.Projects.Include(p => p.Members)
+                .FirstOrDefaultAsync(p => p.Id == id);
+            return (project == null || project.Visibility == Visibility.Private) ? Results.NotFound() : Results.Ok(project);
+        }
+        else
+        {
+            var project = await _context.Projects.Include(p => p.Members)
+                .FirstOrDefaultAsync(p => p.Id == id);
+            return project == null ? Results.NotFound() : Results.Ok(project);
+        }
     }
 
     [Route("list")]
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IResult> ReadAllProject()
     {
-        var projects = await _context.Projects.ToListAsync();
-        return Results.Ok(projects);
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null)
+        {
+            var projects = await _context.Projects
+                .Where(p => p.Visibility == Visibility.Public)
+                .ToListAsync();
+            return Results.Ok(projects);
+        }
+        else
+        {
+            var projects = await _context.Projects.ToListAsync();
+            return Results.Ok(projects);
+        }
     }
 
     [HttpPut("{id}")]
@@ -91,14 +104,7 @@ public class ProjectController : ControllerBase
         if (sid == null) return Results.Unauthorized();
         if (sid != _project.UserId.ToString()) return Results.Forbid();
 
-        _project.Name = project.Name;
-        _project.Description = project.Description;
-        _project.StartDate = project.StartDate;
-        _project.EndDate = project.EndDate;
-        _project.Status = project.Status;
-        _project.Genre = project.Genre;
-        _project.Engine = project.Engine;
-        _project.FileSrc = project.FileSrc;
+        _project.Copy(project);
 
         await _context.SaveChangesAsync();
         return Results.Created($"/calendar/{_project.Id}", _project);
