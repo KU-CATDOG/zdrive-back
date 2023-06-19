@@ -2,10 +2,10 @@ namespace ZDrive.Models;
 
 public record UserData
 {
-    public int Id;
-    public string StudentNumber;
-    public string Name;
-    public Authority Authority;
+    public int Id { get; init; }
+    public string StudentNumber { get; init; }
+    public string Name { get; init; }
+    public Authority Authority { get; init; }
 
     public UserData(User user)
     {
@@ -14,4 +14,7 @@ public record UserData
         this.Name = user.Name;
         this.Authority = user.Authority;
     }
+
+    public static UserData User(User user)
+        => new UserData(user);
 }

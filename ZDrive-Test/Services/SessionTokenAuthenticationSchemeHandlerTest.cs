@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using ZDrive.Models;
 using ZDrive.Services;
 
 namespace ZDrive_Test;
@@ -21,16 +22,19 @@ public class SessionTokenAuthenticationSchemeHandlerTest
     private SessionTokenAuthenticationSchemeHandler GetHandler()
         => new SessionTokenAuthenticationSchemeHandler(_options.Object, _loggerFactory.Object, _encoder.Object, _clock.Object, _sessionStorage.Object);
 
+    private Session CreateRandomSession()
+        => new Session(UserData.User(new TestDataBuilder<User>().Randomize().Build()), DateTime.Now);
+
     [SetUp]
     public void SetUp()
     {
         _options = new Mock<IOptionsMonitor<SessionTokenAuthenticationSchemeOptions>>();
-            
+
         // This Setup is required for .NET Core 3.1 onwards.
         _options
             .Setup(x => x.Get(It.IsAny<string>()))
             .Returns(new SessionTokenAuthenticationSchemeOptions());
-        
+
         var logger = new Mock<ILogger<SessionTokenAuthenticationSchemeHandler>>();
         _loggerFactory = new Mock<ILoggerFactory>();
         _loggerFactory.Setup(x => x.CreateLogger(It.IsAny<String>())).Returns(logger.Object);
@@ -82,7 +86,7 @@ public class SessionTokenAuthenticationSchemeHandlerTest
     {
         // Arrange
         var ssid = Guid.NewGuid();
-        var session = new Session(1, DateTime.Now);
+        var session = CreateRandomSession();
         var context = new Mock<HttpContext>();
         context.Setup(e => e.Request.Cookies["sessionId"])
             .Returns(ssid.ToString());
@@ -107,7 +111,7 @@ public class SessionTokenAuthenticationSchemeHandlerTest
     {
         // Arrange
         var ssid = Guid.NewGuid();
-        var session = new Session(1, DateTime.Now);
+        var session = CreateRandomSession();
         var context = new Mock<HttpContext>();
         context.Setup(e => e.Request.Cookies["sessionId"])
             .Returns(ssid.ToString());
@@ -126,6 +130,6 @@ public class SessionTokenAuthenticationSchemeHandlerTest
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Succeeded, Is.True);
-        Assert.That(result.Ticket?.Principal.HasClaim(c => c.Type == ClaimTypes.Sid && c.Value == "1"), Is.True);
+        Assert.That(result.Ticket?.Principal.HasClaim(c => c.Type == ClaimTypes.Sid && c.Value == session.Data.Id.ToString()), Is.True);
     }
 }
