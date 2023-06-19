@@ -31,7 +31,6 @@ public class User
 
     public Authority Authority { get; set; } = Authority.Anonymous;
 
-    [JsonIgnore]
     public StudentNum StudentNum { get; set; } = null!;
 
     public ICollection<Project> Projects { get; } = new List<Project>(); // Navigation collection

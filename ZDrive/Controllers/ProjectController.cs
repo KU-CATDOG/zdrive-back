@@ -6,6 +6,7 @@ using ZDrive.Data;
 using ZDrive.Extensions;
 using ZDrive.Models;
 using ZDrive.Services;
+using ZDrive.Utils;
 
 namespace ZDrive.Controllers;
 
@@ -56,41 +57,70 @@ public class ProjectController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IResult> Read(int id)
     {
+        var projects = from p in _context.Projects
+            .Include(p => p.Members)
+            .ThenInclude(m => m.StudentNum)
+            select p;
+
+        var project = await projects.FirstOrDefaultAsync(p => p.Id == id);
+
         var sid = User.FindFirstValue(ClaimTypes.Sid);
-        if (sid == null)
+        if (sid == null && (project?.Visibility) != Visibility.Public)
         {
-            var project = await _context.Projects.Include(p => p.Members)
-                .FirstOrDefaultAsync(p => p.Id == id);
-            return (project == null || project.Visibility == Visibility.Private) ? Results.NotFound() : Results.Ok(project);
+            project = null;
         }
-        else
-        {
-            var project = await _context.Projects.Include(p => p.Members)
-                .FirstOrDefaultAsync(p => p.Id == id);
-            return project == null ? Results.NotFound() : Results.Ok(project);
-        }
+
+        return project == null ? Results.NotFound() : Results.Ok(project);
     }
 
     [Route("list")]
-    [HttpGet]
+    [HttpGet("list/{search}/{period}")]
     [AllowAnonymous]
-    public async Task<IResult> ReadAllProject()
+    public async Task<IResult> ReadAllProject
+    (
+        [FromQuery(Name = "search")]string? search = null,
+        [FromQuery(Name = "period")]string? period = null
+    )
     {
+        var projects = from p in _context.Projects
+            select p;
+        
+        if (!String.IsNullOrEmpty(search))
+        {
+            projects = projects
+                .Where(p => p.Name.Contains(search));
+        }
+
+        if (!String.IsNullOrEmpty(period))
+        {
+            try
+            {
+                var date = new Period(period);
+                projects = projects
+                    .Where
+                    (
+                        p => p.StartDate != null &&
+                        date.Semester == Semester.First ? (new DateTime(date.Year, 3, 1) < p.StartDate && new DateTime(date.Year, 8, 31) > p.StartDate)
+                            : ( new DateTime(date.Year, 9, 1) < p.StartDate && new DateTime(date.Year + 1, 2, DateTime.IsLeapYear(date.Year) ? 29 : 28) > p.StartDate )
+                    );
+            }
+            catch
+            {
+                return Results.BadRequest();
+            }
+        }
+
         var sid = User.FindFirstValue(ClaimTypes.Sid);
         if (sid == null)
         {
-            var projects = await _context.Projects
-                .Where(p => p.Visibility == Visibility.Public)
-                .ToListAsync();
-            return Results.Ok(projects);
+            projects = projects
+                .Where(p => p.Visibility == Visibility.Public);
         }
-        else
-        {
-            var projects = await _context.Projects.ToListAsync();
-            return Results.Ok(projects);
-        }
+
+        return Results.Ok(await projects.ToListAsync());
     }
 
     [HttpPut("{id}")]
