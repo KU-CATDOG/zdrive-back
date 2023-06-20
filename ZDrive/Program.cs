@@ -36,10 +36,13 @@ if (app.Environment.IsDevelopment())
         options.AllowAnyMethod();
         options.AllowCredentials();
     });
+
+    app.UseStatusCodePages();
 }
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles();
 app.MapControllers().RequireAuthorization();
 app.Run();
