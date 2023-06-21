@@ -199,6 +199,7 @@ public class ProjectController : ControllerBase
 
         _member.Description = member.Description;
         _member.Index = member.Index;
+        _member.Role = member.Role;
 
         await _context.SaveChangesAsync();
         return Results.Created($"/project/member/{id}", _member);
