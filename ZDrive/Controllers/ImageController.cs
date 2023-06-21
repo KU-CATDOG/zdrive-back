@@ -44,7 +44,7 @@ public class ImageController : ControllerBase
             return Results.BadRequest("File size is too large.");
         }
 
-        var filePath = Path.Combine(@"wwwroot\images", 
+        var filePath = Path.Combine($"wwwroot{Path.DirectorySeparatorChar}images", 
             Path.GetRandomFileName().Substring(0, 8) + fileExtension);
         
         using (var stream = new FileStream(filePath, FileMode.Create))
