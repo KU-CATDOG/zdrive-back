@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ZDrive.Models;
 
-public class ProjectInformation
+public class ProjectInfo
 {
     [Required]
     public int UserId { get; set; }

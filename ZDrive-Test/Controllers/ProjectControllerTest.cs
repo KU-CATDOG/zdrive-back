@@ -20,7 +20,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var project = new ProjectInformation
+        var project = new ProjectInfo
         {
             Name = "Baba Is You",
             UserId = 1
@@ -39,7 +39,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var project = new TestDataBuilder<ProjectInformation>()
+        var project = new TestDataBuilder<ProjectInfo>()
             .Randomize()
             .Build();
         var cnt = context.Projects.Count();
@@ -186,7 +186,7 @@ public class ProjectControllerTest
     public async Task Update_NonProjectId_ReturnsNotFoundCode()
     {
         // Arrange
-        var project = new ProjectInformation();
+        var project = new ProjectInfo();
         using var context = testDbCreater.Create();
         var controller = CreateController(context);
 
@@ -201,7 +201,7 @@ public class ProjectControllerTest
     public async Task Update_ExistProjectId_ShouldUpdateProject()
     {
         // Arrange
-        var project = new TestDataBuilder<ProjectInformation>()
+        var project = new TestDataBuilder<ProjectInfo>()
             .Randomize()
             .Build();
         using var context = testDbCreater.Create();
@@ -219,7 +219,7 @@ public class ProjectControllerTest
     public async Task Update_UserThatIsNotOwner_ReturnsForbidStatusCode()
     {
         // Arrange
-        var project = new ProjectInformation
+        var project = new ProjectInfo
         {
             Name = "Baba Is You",
             Description = "Baba Is You!"
@@ -238,7 +238,7 @@ public class ProjectControllerTest
     public async Task AddMembers_NonProjectId_ReturnsNotFoundStatusCode()
     {
         // Arrange
-        var members = new MemberInformation[] { };
+        var members = new MemberInfo[] { };
         using var context = testDbCreater.Create();
         var controller = CreateController(context);
 
@@ -254,9 +254,9 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var members = new MemberInformation[]
+        var members = new MemberInfo[]
         {
-            new MemberInformation
+            new MemberInfo
             {
                 StudentNumber = "2021320006",
                 Role = Role.Programmer
@@ -278,9 +278,9 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var members = new MemberInformation[]
+        var members = new MemberInfo[]
         {
-            new TestDataBuilder<MemberInformation>()
+            new TestDataBuilder<MemberInfo>()
             .Randomize()
             .Setup(m => m.StudentNumber = "2020320124")
             .Build()
@@ -301,9 +301,9 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var members = new MemberInformation[]
+        var members = new MemberInfo[]
         {
-            new TestDataBuilder<MemberInformation>()
+            new TestDataBuilder<MemberInfo>()
             .Randomize()
             .Setup(m => m.StudentNumber = "2021320003")
             .Setup(m => m.Role = Role.GameDesigner)
@@ -325,9 +325,9 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var members = new MemberInformation[]
+        var members = new MemberInfo[]
         {
-            new MemberInformation
+            new MemberInfo
             {
                 StudentNumber = "2021320003",
                 Role = Role.Programmer
@@ -347,7 +347,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var members = new MemberInformation[] { };
+        var members = new MemberInfo[] { };
         var controller = CreateController(context, 2);
 
         // Act
@@ -362,7 +362,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var member = new MemberInformation();
+        var member = new MemberInfo();
         var controller = CreateController(context);
 
         // Act
@@ -377,7 +377,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var member = new MemberInformation();
+        var member = new MemberInfo();
         var controller = CreateController(context, 2);
 
         // Act
@@ -392,7 +392,7 @@ public class ProjectControllerTest
     {
         // Arrange
         using var context = testDbCreater.Create();
-        var member = new TestDataBuilder<MemberInformation>().Randomize().Build();
+        var member = new TestDataBuilder<MemberInfo>().Randomize().Build();
         var controller = CreateController(context);
 
         // Act
