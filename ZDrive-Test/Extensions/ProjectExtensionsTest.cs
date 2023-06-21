@@ -14,7 +14,7 @@ public class ProjectExtensionsTest
     public void Copy_DataOfCopiedProject_ShouldBeSameWithOriginal()
     {
         // Arrange
-        var project1 = new TestDataBuilder<ProjectInformation>()
+        var project1 = new TestDataBuilder<ProjectInfo>()
             .Randomize().Build();
 
         var project2 = new Project();
@@ -35,7 +35,7 @@ public class ProjectExtensionsTest
     public void Copy_HashCodeOfCopiedProject_ShouldNotBeChanged()
     {
         // Arrange
-        var project1 = new ProjectInformation
+        var project1 = new ProjectInfo
         {
             Name = "Test",
             Description = "Test",

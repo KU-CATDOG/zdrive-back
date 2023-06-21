@@ -22,7 +22,7 @@ public class ProjectController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IResult> Create(ProjectInformation project)
+    public async Task<IResult> Create(ProjectInfo project)
     {
         if ((await _context.Projects.FirstOrDefaultAsync(p => p.Name == project.Name)) != null)
             return Results.Conflict();
@@ -124,7 +124,7 @@ public class ProjectController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IResult> Update(int id, ProjectInformation project)
+    public async Task<IResult> Update(int id, ProjectInfo project)
     {
         var _project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
 
@@ -142,7 +142,7 @@ public class ProjectController : ControllerBase
 
     [Route("member")]
     [HttpPost("member/{id}")]
-    public async Task<IResult> AddMembers(int id, MemberInformation[] members)
+    public async Task<IResult> AddMembers(int id, MemberInfo[] members)
     {
         var _project = await _context.Projects
             .Include(e => e.Members).FirstOrDefaultAsync(e => e.Id == id);
@@ -188,7 +188,7 @@ public class ProjectController : ControllerBase
 
     [Route("member")]
     [HttpPut("member/{id}")]
-    public async Task<IResult> UpdateMember(int id, MemberInformation member)
+    public async Task<IResult> UpdateMember(int id, MemberInfo member)
     {
         var _member = await _context.Members.FindAsync(id);
         if (_member == null) return Results.NotFound();
