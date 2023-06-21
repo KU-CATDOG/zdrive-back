@@ -9,6 +9,15 @@ public class ImageController : ControllerBase
 {
     private readonly ZDriveDbContext _context;
 
+    private List<string> supportedExtensionList = new List<string>()
+    {
+        ".gif",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".webp"
+    };
+
     public ImageController(ZDriveDbContext context)
     {
         _context = context;
@@ -20,10 +29,21 @@ public class ImageController : ControllerBase
     {
         if (file == null || file.Length == 0)
         {
-            return Results.BadRequest("파일이 제공되지 않았습니다.");
+            return Results.BadRequest("No file is provided.");
         }
         
-        var fileExtension = "." + file.ContentType.Substring(file.ContentType.IndexOf("/") + 1);
+        var fileExtension = "." + file.FileName.Substring(file.FileName.LastIndexOf(".") + 1);
+
+        if (!supportedExtensionList.Contains(fileExtension))
+        {
+            return Results.BadRequest("Not supported extension.");
+        }
+
+        if (file.Length > 4194304)
+        {
+            return Results.BadRequest("File size is too large.");
+        }
+
         var filePath = Path.Combine(@"wwwroot\images", 
             Path.GetRandomFileName().Substring(0, 8) + fileExtension);
         
