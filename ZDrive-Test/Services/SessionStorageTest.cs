@@ -23,7 +23,7 @@ public class SessionStorageTest
 
         // Assert
         Assert.IsTrue(ret);
-        Assert.AreNotEqual(default(Guid), ssid);
+        Assert.That(ssid, Is.Not.EqualTo(default(Guid)));
     }
 
     [Test]
@@ -53,7 +53,7 @@ public class SessionStorageTest
 
         // Assert
         Assert.True(sessionStorage.TryGetUser(ssid1, out var ret));
-        Assert.AreEqual(userData, ret.Data);
+        Assert.That(ret.Data, Is.EqualTo(userData));
     }
 
     [Test]
@@ -64,7 +64,7 @@ public class SessionStorageTest
 
         // Assert
         Assert.False(sessionStorage.TryGetUser(Guid.NewGuid(), out var ret));
-        Assert.AreEqual(default(UserData), ret.Data);
+        Assert.That(ret.Data, Is.EqualTo(default(UserData)));
     }
 
     [Test]
@@ -79,7 +79,7 @@ public class SessionStorageTest
 
         // Assert
         Assert.False(sessionStorage.TryGetUser(ssid1, out var ret));
-        Assert.AreEqual(default(UserData), ret.Data);
+        Assert.That(ret.Data, Is.EqualTo(default(UserData)));
     }
 
     [Test]

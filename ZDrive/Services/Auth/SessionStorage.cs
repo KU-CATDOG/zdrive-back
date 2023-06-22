@@ -25,7 +25,7 @@ public class SessionStorage : ISessionStorage
         RemoveExpiredUser();
 
         ssid = Guid.NewGuid();
-        _session[ssid] = 
+        _session[ssid] =
             new Session(userData, dateTime == default ? DateTime.Now.Add(expires) : dateTime);
 
         return true;

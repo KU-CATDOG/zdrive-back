@@ -1,9 +1,9 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ZDrive.Data;
 using ZDrive.Models;
 using ZDrive.Services;
@@ -56,7 +56,7 @@ public class AuthController : ControllerBase
                 HttpOnly = true
             });
         }
-        
+
         var userData = UserData.User(_user);
 
         return Results.Ok(userData);
@@ -92,7 +92,7 @@ public class AuthController : ControllerBase
         var checkUser = await FindUserByStdNumAsync(reg.StudentNumber);
         if (checkUser != null) return Results.Conflict();
 
-        var checkStudentNum = 
+        var checkStudentNum =
             await _context.StudentNums.FirstOrDefaultAsync(s => s.StudentNumber == reg.StudentNumber);
         if (checkStudentNum == null)
         {
@@ -127,7 +127,7 @@ public class AuthController : ControllerBase
     {
         var _user = await FindUserByStdNumAsync(login.StudentNumber);
         if (_user == null) return Results.NotFound();
-        if (_user.PasswordHash != GeneratePasswordHash(login.Password, _user.Salt)) 
+        if (_user.PasswordHash != GeneratePasswordHash(login.Password, _user.Salt))
             return Results.NotFound();
 
         _session.RemoveUser(UserData.User(_user));

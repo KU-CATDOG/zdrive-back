@@ -64,7 +64,7 @@ public class ProjectController : ControllerBase
             .Include(p => p.Members)
             .ThenInclude(m => m.StudentNum)
             .Include(p => p.Images)
-            select p;
+                       select p;
 
         var project = await projects.FirstOrDefaultAsync(p => p.Id == id);
 
@@ -82,13 +82,13 @@ public class ProjectController : ControllerBase
     [AllowAnonymous]
     public async Task<IResult> ReadAllProject
     (
-        [FromQuery(Name = "search")]string? search = null,
-        [FromQuery(Name = "period")]string? period = null
+        [FromQuery(Name = "search")] string? search = null,
+        [FromQuery(Name = "period")] string? period = null
     )
     {
         var projects = from p in _context.Projects
-            select p;
-        
+                       select p;
+
         if (!String.IsNullOrEmpty(search))
         {
             projects = projects
@@ -105,7 +105,7 @@ public class ProjectController : ControllerBase
                     (
                         p => p.StartDate != null &&
                         date.Semester == Semester.First ? (new DateTime(date.Year, 3, 1) < p.StartDate && new DateTime(date.Year, 8, 31) > p.StartDate)
-                            : ( new DateTime(date.Year, 9, 1) < p.StartDate && new DateTime(date.Year + 1, 2, DateTime.IsLeapYear(date.Year) ? 29 : 28) > p.StartDate )
+                            : (new DateTime(date.Year, 9, 1) < p.StartDate && new DateTime(date.Year + 1, 2, DateTime.IsLeapYear(date.Year) ? 29 : 28) > p.StartDate)
                     );
             }
             catch

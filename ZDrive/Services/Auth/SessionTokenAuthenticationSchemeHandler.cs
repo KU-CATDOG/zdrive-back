@@ -29,7 +29,7 @@ public class SessionTokenAuthenticationSchemeHandler : AuthenticationHandler<Ses
         if (!_session.TryGetUser(guid, out var session))
             return AuthenticateResult.Fail("Session authentication failed.  Token does not exist in storage.");
 
-        var claims = new[] { 
+        var claims = new[] {
             new Claim(ClaimTypes.Sid, session.Data.Id.ToString()),
             new Claim(ClaimTypes.Role, session.Data.Authority.ToString()) };
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "Tokens"));

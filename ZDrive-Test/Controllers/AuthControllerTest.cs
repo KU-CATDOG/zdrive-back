@@ -131,7 +131,7 @@ public class AuthControllerTest
         mockHttpRequest.Setup(x => x.Cookies["sessionId"]).Returns(ssid.ToString());
 
         dict[ssid] = new Session(UserData.User(fakeUserList[1]), DateTime.Now);
-        
+
         using var context = testDbContextCreater.Create();
         var controller = CreateAuthController(context);
 
@@ -339,7 +339,7 @@ public class AuthControllerTest
         mockHttpContext.Setup(foo => foo.Request).Returns(mockHttpRequest.Object);
 
         testDbContextCreater = new TestDbContextCreater();
-        testDbContextCreater.Setup(c => 
+        testDbContextCreater.Setup(c =>
         {
             c.Users.AddRange(fakeUserList);
             c.StudentNums.AddRange(fakeStdNumList);

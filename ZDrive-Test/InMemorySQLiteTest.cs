@@ -28,8 +28,8 @@ public class InMemorySQLiteTest
         context.Database.EnsureCreated();
 
         context.StudentNums.AddRange(
-            new StudentNum {StudentNumber = "2021320006", Name = "Minjong"},
-            new StudentNum {StudentNumber = "2020320124", Name = "Chaenamul"}
+            new StudentNum { StudentNumber = "2021320006", Name = "Minjong" },
+            new StudentNum { StudentNumber = "2020320124", Name = "Chaenamul" }
         );
         context.SaveChanges();
     }

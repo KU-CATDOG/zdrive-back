@@ -59,7 +59,7 @@ public class TestDataBuilder<T> where T : class, new()
         foreach (var property in properties)
         {
             var value = GenerateRandomValue(property.PropertyType);
-            property.GetSetMethod()?.Invoke(data, new object[] {value});
+            property.GetSetMethod()?.Invoke(data, new object[] { value });
         }
 
         return this;

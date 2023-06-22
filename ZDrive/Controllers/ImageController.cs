@@ -31,7 +31,7 @@ public class ImageController : ControllerBase
         {
             return Results.BadRequest("No file is provided.");
         }
-        
+
         var fileExtension = "." + file.FileName.Substring(file.FileName.LastIndexOf(".") + 1);
 
         if (!supportedExtensionList.Contains(fileExtension))
@@ -44,14 +44,14 @@ public class ImageController : ControllerBase
             return Results.BadRequest("File size is too large.");
         }
 
-        var filePath = Path.Combine($"wwwroot{Path.DirectorySeparatorChar}images", 
+        var filePath = Path.Combine($"wwwroot{Path.DirectorySeparatorChar}images",
             Path.GetRandomFileName().Substring(0, 8) + fileExtension);
-        
+
         using (var stream = new FileStream(filePath, FileMode.Create))
         {
             await file.CopyToAsync(stream);
         }
-        
+
         return Results.Ok(filePath);
     }
 }

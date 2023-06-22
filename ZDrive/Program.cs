@@ -20,7 +20,7 @@ builder.Services.AddSingleton<ISessionStorage, SessionStorage>();
 builder.Services.AddAuthentication()
     .AddScheme<SessionTokenAuthenticationSchemeOptions, SessionTokenAuthenticationSchemeHandler>(
         "SessionTokens",
-        opts => {}
+        opts => { }
     );
 
 var app = builder.Build();

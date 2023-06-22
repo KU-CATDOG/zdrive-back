@@ -4,8 +4,8 @@ namespace ZDrive.Extensions;
 
 public static class ProjectExtensions
 {
-    public static void Copy(this Project _project, ProjectInfo project)  
-    {  
+    public static void Copy(this Project _project, ProjectInfo project)
+    {
         _project.Name = project.Name;
         _project.Description = project.Description;
         _project.StartDate = project.StartDate;
@@ -15,5 +15,5 @@ public static class ProjectExtensions
         _project.Genre = project.Genre;
         _project.Engine = project.Engine;
         _project.FileSrc = project.FileSrc;
-    }  
+    }
 }

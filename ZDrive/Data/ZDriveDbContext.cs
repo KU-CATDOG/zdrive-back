@@ -30,7 +30,7 @@ public class ZDriveDbContext : DbContext
             .HasForeignKey(e => e.ProjectId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<Project>()
             .HasMany(e => e.Members)
             .WithOne(e => e.Project)
