@@ -10,6 +10,9 @@ jobs:
       name: windows/default
     steps:
       - checkout
+      - run:
+          name: "Run dotnet format check"
+          command: dotnet format --verify-no-changes
       - restore_cache:
           keys:
             - dotnet-packages-v1-{{ checksum "ZDrive/zdrive-back.csproj" }}{{ checksum "ZDrive-Test/ZDrive-Test.csproj" }}
