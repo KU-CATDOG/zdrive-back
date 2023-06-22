@@ -259,6 +259,23 @@ public class ProjectController : ControllerBase
     }
 
     [Route("image")]
+    [HttpPut("image/{src}")]
+    public async Task<IResult> UpdateImage(string src, ImageInfo image)
+    {
+        var _image = await _context.Images.FindAsync(src);
+        if (_image == null) return Results.NotFound();
+
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+        if (sid != _image.ProjectId.ToString()) return Results.Forbid();
+
+        _image.Index = image.Index;
+
+        await _context.SaveChangesAsync();
+        return Results.Created($"/project/image/{src}", _image);
+    }
+
+    [Route("image")]
     [HttpDelete("image/{src}")]
     public async Task<IResult> DeleteImage(string src)
     {
