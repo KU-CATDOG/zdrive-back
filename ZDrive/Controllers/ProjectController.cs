@@ -63,6 +63,7 @@ public class ProjectController : ControllerBase
         var projects = from p in _context.Projects
             .Include(p => p.Members)
             .ThenInclude(m => m.StudentNum)
+            .Include(p => p.Images)
             select p;
 
         var project = await projects.FirstOrDefaultAsync(p => p.Id == id);
@@ -145,7 +146,8 @@ public class ProjectController : ControllerBase
     public async Task<IResult> AddMembers(int id, MemberInfo[] members)
     {
         var _project = await _context.Projects
-            .Include(e => e.Members).FirstOrDefaultAsync(e => e.Id == id);
+            .Include(e => e.Members)
+            .FirstOrDefaultAsync(e => e.Id == id);
         if (_project == null) return Results.NotFound();
 
         var sid = User.FindFirstValue(ClaimTypes.Sid);
@@ -219,5 +221,56 @@ public class ProjectController : ControllerBase
         _context.Members.Remove(_member);
         await _context.SaveChangesAsync();
         return Results.Ok(_member);
+    }
+
+    [Route("image")]
+    [HttpPost("image/{id}")]
+    public async Task<IResult> AddImages(int id, ImageInfo[] images)
+    {
+        var _project = await _context.Projects
+            .Include(e => e.Images)
+            .FirstOrDefaultAsync(e => e.Id == id);
+        if (_project == null) return Results.NotFound();
+
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+        if (sid != _project.UserId.ToString()) return Results.Forbid();
+
+        foreach (var image in images)
+        {
+            if (await _context.Images.FindAsync(image.ImageSrc) != null)
+            {
+                _context.RevertChanges();
+                return Results.Conflict();
+            }
+
+            var newImage = new Image
+            {
+                ProjectId = id,
+                ImageSrc = image.ImageSrc,
+                Index = image.Index
+            };
+
+            await _context.Images.AddAsync(newImage);
+        }
+
+        await _context.SaveChangesAsync();
+        return Results.Created<Project>($"/project/image/{id}", _project);
+    }
+
+    [Route("image")]
+    [HttpDelete("image/{src}")]
+    public async Task<IResult> DeleteImage(string src)
+    {
+        var _image = await _context.Images.FindAsync(src);
+        if (_image == null) return Results.NotFound();
+
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+        if (sid != _image.ProjectId.ToString()) return Results.Forbid();
+
+        _context.Images.Remove(_image);
+        await _context.SaveChangesAsync();
+        return Results.Ok(_image);
     }
 }
