@@ -19,8 +19,22 @@ public class UserController : ControllerBase
     }
 
     [Route("project")]
+    [HttpGet("project/{num}")]
+    public async Task<IResult> ReadContributedProjects(string num)
+    {
+        var projectIds = await (from m in _context.Members
+                                where m.StudentNumber == num
+                                select m.ProjectId).ToListAsync();
+
+        var projects = _context.Projects.Where(p => projectIds.Contains(p.Id));
+
+        var ret = await projects.ToListAsync();
+        return ret.Count > 0 ? Results.Ok(ret) : Results.NotFound();
+    }
+
+    [Route("project")]
     [HttpGet]
-    public async Task<IResult> ReadProjects()
+    public async Task<IResult> ReadOwnedProjects()
     {
         var projects = from p in _context.Projects
                        select p;
