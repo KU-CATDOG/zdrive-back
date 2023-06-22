@@ -62,8 +62,8 @@ public class ZDriveDbContext : DbContext
         modelBuilder.Entity<Member>()
             .Property(e => e.Role)
             .HasConversion(
-                v => v.ToString(),
-                v => (Role)Enum.Parse(typeof(Role), v)
+                v => (int)v,
+                v => (Role)v
             );
 
         modelBuilder.Entity<User>()

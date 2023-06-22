@@ -31,11 +31,12 @@ public class Member
     public StudentNum StudentNum { get; set; } = null!;
 }
 
+[Flags]
 public enum Role
 {
-    Programmer,
-    GraphicArtist,
-    SoundArtist,
-    GameDesigner,
-    ProjectManager
+    Programmer = 1 << 0,
+    GraphicArtist = 1 << 1,
+    SoundArtist = 1 << 2,
+    GameDesigner = 1 << 3,
+    ProjectManager = 1 << 4
 }
