@@ -45,14 +45,15 @@ public class ImageController : ControllerBase
         }
 
         var sep = Path.DirectorySeparatorChar;
-        var filePath = Path.Combine($"{sep}home{sep}zdrive-dev{sep}uploads", 
-            Path.GetRandomFileName().Substring(0, 8) + fileExtension);
+        var basePath = $"{sep}home{sep}zdrive-dev{sep}uploads";
+        var fileName = Path.GetRandomFileName()[..8] + fileExtension;
+        var filePath = Path.Combine(basePath, fileName);
 
         using (var stream = new FileStream(filePath, FileMode.Create))
         {
             await file.CopyToAsync(stream);
         }
 
-        return Results.Ok(filePath);
+        return Results.Ok(fileName);
     }
 }
