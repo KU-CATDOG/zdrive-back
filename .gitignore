@@ -235,3 +235,4 @@ AppPackages/
 log/
 logs/
 ZDrive-Test/coverage.json
+ZDrive/config.json

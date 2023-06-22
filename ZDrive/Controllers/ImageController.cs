@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ZDrive.Data;
+using ZDrive.Services;
 
 namespace ZDrive.Controllers;
 
@@ -8,6 +9,7 @@ namespace ZDrive.Controllers;
 public class ImageController : ControllerBase
 {
     private readonly ZDriveDbContext _context;
+    private readonly ConfigProvider _config;
 
     private List<string> supportedExtensionList = new List<string>()
     {
@@ -18,9 +20,10 @@ public class ImageController : ControllerBase
         ".webp"
     };
 
-    public ImageController(ZDriveDbContext context)
+    public ImageController(ZDriveDbContext context, ConfigProvider config)
     {
         _context = context;
+        _config = config;
     }
 
     [Route("upload")]
@@ -44,8 +47,7 @@ public class ImageController : ControllerBase
             return Results.BadRequest("File size is too large.");
         }
 
-        var sep = Path.DirectorySeparatorChar;
-        var basePath = $"{sep}home{sep}zdrive-dev{sep}uploads";
+        var basePath = _config["ImageLocation"];
         var fileName = Path.GetRandomFileName()[..8] + fileExtension;
         var filePath = Path.Combine(basePath, fileName);
 

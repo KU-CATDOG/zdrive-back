@@ -12,10 +12,12 @@ builder.Services.AddCors();
 builder.Services.AddEndpointsApiExplorer();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+var configFileLocation = builder.Configuration.GetValue<string>("ConfigLocation") ?? throw new InvalidOperationException("Config file not found.");
 builder.Services.AddDbContext<ZDriveDbContext>(options =>
     options.UseSqlite(connectionString));
 
 builder.Services.AddSingleton<ISessionStorage, SessionStorage>();
+builder.Services.AddScoped<ConfigProvider>(p => new ConfigProvider(configFileLocation));
 
 builder.Services.AddAuthentication()
     .AddScheme<SessionTokenAuthenticationSchemeOptions, SessionTokenAuthenticationSchemeHandler>(
