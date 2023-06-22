@@ -44,7 +44,8 @@ public class ImageController : ControllerBase
             return Results.BadRequest("File size is too large.");
         }
 
-        var filePath = Path.Combine($"wwwroot{Path.DirectorySeparatorChar}images",
+        var sep = Path.DirectorySeparatorChar;
+        var filePath = Path.Combine($"{sep}home{sep}zdrive-dev{sep}uploads", 
             Path.GetRandomFileName().Substring(0, 8) + fileExtension);
 
         using (var stream = new FileStream(filePath, FileMode.Create))
