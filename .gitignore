@@ -230,9 +230,11 @@ AppPackages/
 
 *.db-wal
 
+*.tar
+
 /**/appsettings.*
 !/**/appsettings.*.base
 log/
 logs/
 ZDrive-Test/coverage.json
-ZDrive/config.json
+docker-compose.yml
