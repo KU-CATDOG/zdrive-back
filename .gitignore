@@ -236,3 +236,4 @@ log/
 logs/
 ZDrive-Test/coverage.json
 docker-compose.yml
+*.ps1

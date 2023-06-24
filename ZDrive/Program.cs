@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.EntityFrameworkCore;
 using ZDrive.Data;
 using ZDrive.Services;
@@ -24,6 +25,15 @@ builder.Services.AddAuthentication()
         "SessionTokens",
         opts => { }
     );
+
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Services.AddHttpsRedirection(options =>
+    {
+        options.RedirectStatusCode = (int)HttpStatusCode.PermanentRedirect;
+        options.HttpsPort = 443;
+    });
+}
 
 var app = builder.Build();
 
