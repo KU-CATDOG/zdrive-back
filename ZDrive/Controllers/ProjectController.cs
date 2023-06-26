@@ -105,7 +105,7 @@ public class ProjectController : ControllerBase
                     (
                         p => p.StartDate != null &&
                         date.Semester == Semester.First ? (new DateTime(date.Year, 3, 1) < p.StartDate && new DateTime(date.Year, 8, 31) > p.StartDate)
-                            : (new DateTime(date.Year, 9, 1) < p.StartDate && new DateTime(date.Year + 1, 2, DateTime.IsLeapYear(date.Year) ? 29 : 28) > p.StartDate)
+                            : (new DateTime(date.Year, 9, 1) < p.StartDate && new DateTime(date.Year + 1, 2, DateTime.IsLeapYear(date.Year + 1) ? 29 : 28) > p.StartDate)
                     );
             }
             catch
