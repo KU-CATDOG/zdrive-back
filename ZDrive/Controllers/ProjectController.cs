@@ -145,13 +145,14 @@ public class ProjectController : ControllerBase
     [HttpPost("member/{id}")]
     public async Task<IResult> AddMembers(int id, MemberInfo[] members)
     {
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+
         var _project = await _context.Projects
             .Include(e => e.Members)
             .FirstOrDefaultAsync(e => e.Id == id);
         if (_project == null) return Results.NotFound();
 
-        var sid = User.FindFirstValue(ClaimTypes.Sid);
-        if (sid == null) return Results.Unauthorized();
         if (sid != _project.UserId.ToString()) return Results.Forbid();
 
         foreach (var member in members)
@@ -192,12 +193,13 @@ public class ProjectController : ControllerBase
     [HttpPut("member/{id}")]
     public async Task<IResult> UpdateMember(int id, MemberInfo member)
     {
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+
         var _member = await _context.Members.FindAsync(id);
         if (_member == null) return Results.NotFound();
 
-        var sid = User.FindFirstValue(ClaimTypes.Sid);
-        if (sid == null) return Results.Unauthorized();
-        if (sid != _member.ProjectId.ToString()) return Results.Forbid();
+        if (sid != _member.Project.UserId.ToString()) return Results.Forbid();
 
         _member.Description = member.Description;
         _member.Index = member.Index;
@@ -211,11 +213,12 @@ public class ProjectController : ControllerBase
     [HttpDelete("member/{id}")]
     public async Task<IResult> DeleteMember(int id)
     {
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+
         var _member = await _context.Members.FindAsync(id);
         if (_member == null) return Results.NotFound();
 
-        var sid = User.FindFirstValue(ClaimTypes.Sid);
-        if (sid == null) return Results.Unauthorized();
         if (sid != _member.ProjectId.ToString()) return Results.Forbid();
 
         _context.Members.Remove(_member);
@@ -227,13 +230,14 @@ public class ProjectController : ControllerBase
     [HttpPost("image/{id}")]
     public async Task<IResult> AddImages(int id, ImageInfo[] images)
     {
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+
         var _project = await _context.Projects
             .Include(e => e.Images)
             .FirstOrDefaultAsync(e => e.Id == id);
         if (_project == null) return Results.NotFound();
 
-        var sid = User.FindFirstValue(ClaimTypes.Sid);
-        if (sid == null) return Results.Unauthorized();
         if (sid != _project.UserId.ToString()) return Results.Forbid();
 
         foreach (var image in images)
