@@ -44,7 +44,7 @@ jobs:
           command: ssh $SSH_MERSERVER_USER@$SSH_MERSERVER_HOST -o ProxyCommand="ssh $SSH_CATSERVER_USER@$SSH_CATSERVER_HOST -p 443 -W %h:%p" "./switch-branch.sh << pipeline.git.branch >>"
       - run:
           name: Build and Run Docker Image
-          command: ssh $SSH_MERSERVER_USER@$SSH_MERSERVER_HOST -o ProxyCommand="ssh $SSH_CATSERVER_USER@$SSH_CATSERVER_HOST -p 443 -W %h:%p" "cd ./zdrive-back; docker compose down; docker compose build; docker compose up -d"
+          command: ssh $SSH_MERSERVER_USER@$SSH_MERSERVER_HOST -o ProxyCommand="ssh $SSH_CATSERVER_USER@$SSH_CATSERVER_HOST -p 443 -W %h:%p" "./zdrive-build.sh"
 
 workflows:
   test-and-deploy:
