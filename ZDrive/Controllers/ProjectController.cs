@@ -196,7 +196,9 @@ public class ProjectController : ControllerBase
         var sid = User.FindFirstValue(ClaimTypes.Sid);
         if (sid == null) return Results.Unauthorized();
 
-        var _member = await _context.Members.FindAsync(id);
+        var _member = await _context.Members
+            .Include(m => m.Project)
+            .FirstOrDefaultAsync(m => m.Id == id);
         if (_member == null) return Results.NotFound();
 
         if (sid != _member.Project.UserId.ToString()) return Results.Forbid();
@@ -216,10 +218,12 @@ public class ProjectController : ControllerBase
         var sid = User.FindFirstValue(ClaimTypes.Sid);
         if (sid == null) return Results.Unauthorized();
 
-        var _member = await _context.Members.FindAsync(id);
+        var _member = await _context.Members
+            .Include(m => m.Project)
+            .FirstOrDefaultAsync(m => m.Id == id);
         if (_member == null) return Results.NotFound();
 
-        if (sid != _member.ProjectId.ToString()) return Results.Forbid();
+        if (sid != _member.Project.UserId.ToString()) return Results.Forbid();
 
         _context.Members.Remove(_member);
         await _context.SaveChangesAsync();
