@@ -16,12 +16,11 @@ public class AuthControllerTest
     private Mock<HttpResponse> mockHttpResponse = new Mock<HttpResponse>();
     private Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
     private TestDbContextCreater testDbContextCreater = null!;
-    private Mock<IAuthorizationManager> mockAuthorizationManager = new Mock<IAuthorizationManager>();
     private Mock<ISessionStorage> mockSessionStorage = new Mock<ISessionStorage>();
 
     private AuthController CreateAuthController(ZDriveDbContext context)
     {
-        var controller = new AuthController(context, mockAuthorizationManager.Object, mockSessionStorage.Object);
+        var controller = new AuthController(context, mockSessionStorage.Object);
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = mockHttpContext.Object
@@ -37,8 +36,8 @@ public class AuthControllerTest
         var ssid = Guid.NewGuid();
 
         mockSessionStorage.Setup(x => x.Session).Returns(dict.AsReadOnly());
-        mockSessionStorage.Setup(x => x.AddSession(2, out ssid))
-            .Returns(() => { dict[ssid] = new Session(2, DateTime.Now); return true; });
+        mockSessionStorage.Setup(x => x.AddSession(UserData.User(fakeUserList[1]), out ssid, default))
+            .Returns(() => { dict[ssid] = new Session(UserData.User(fakeUserList[1]), DateTime.Now); return true; });
 
         using var context = testDbContextCreater.Create();
         var controller = CreateAuthController(context);
@@ -51,9 +50,12 @@ public class AuthControllerTest
         };
 
         var ret = await controller.Login(user);
+        var data = (Microsoft.AspNetCore.Http.HttpResults.Ok<UserData>)ret;
 
         // Assert
-        Assert.That(ret, Is.EqualTo(Results.Ok()));
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Ok<UserData>)));
+        Assert.That(data, Is.Not.Null);
+        Assert.That(data.Value?.StudentNumber, Is.EqualTo("2020320124"));
         Assert.That(mockSessionStorage.Object.Session.Count, Is.EqualTo(1));
     }
 
@@ -128,8 +130,8 @@ public class AuthControllerTest
             .Callback(() => dict.Remove(ssid));
         mockHttpRequest.Setup(x => x.Cookies["sessionId"]).Returns(ssid.ToString());
 
-        dict[ssid] = new Session(2, DateTime.Now);
-        
+        dict[ssid] = new Session(UserData.User(fakeUserList[1]), DateTime.Now);
+
         using var context = testDbContextCreater.Create();
         var controller = CreateAuthController(context);
 
@@ -153,7 +155,7 @@ public class AuthControllerTest
             .Callback(() => throw new KeyNotFoundException());
         mockHttpRequest.Setup(x => x.Cookies["sessionId"]).Returns(newSsid.ToString());
 
-        dict[ssid] = new Session(2, DateTime.Now);
+        dict[ssid] = new Session(UserData.User(fakeUserList[1]), DateTime.Now);
 
         using var context = testDbContextCreater.Create();
         var controller = CreateAuthController(context);
@@ -177,7 +179,7 @@ public class AuthControllerTest
             .Callback(() => dict.Remove(ssid));
         mockHttpRequest.Setup(x => x.Cookies["sessionId"]).Returns("InvalidSSID");
 
-        dict[ssid] = new Session(2, DateTime.Now);
+        dict[ssid] = new Session(UserData.User(fakeUserList[1]), DateTime.Now);
 
         using var context = testDbContextCreater.Create();
         var controller = CreateAuthController(context);
@@ -207,11 +209,16 @@ public class AuthControllerTest
 
         // Act
         var ret = await controller.Register(registration);
+        var data = (Microsoft.AspNetCore.Http.HttpResults.Created<UserData>)ret;
 
         // Assert
-        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Created<User>)));
+        Assert.That(ret, Is.TypeOf(typeof(Microsoft.AspNetCore.Http.HttpResults.Created<UserData>)));
         Assert.That(context.StudentNums.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
         Assert.That(context.Users.FirstOrDefault(x => x.StudentNumber == studentNumber), Is.Not.Null);
+
+        Assert.That(data, Is.Not.Null);
+        Assert.That(data.Value?.StudentNumber, Is.EqualTo("2021320006"));
+        Assert.That(data.Value?.Name, Is.EqualTo("Minjong"));
     }
 
     [Test]
@@ -241,9 +248,9 @@ public class AuthControllerTest
     {
         // Arrange
         var ssid = Guid.NewGuid();
-        var session = new Dictionary<Guid, Session> { { ssid, new Session(2, DateTime.Now) } };
+        var session = new Dictionary<Guid, Session> { { ssid, new Session(UserData.User(fakeUserList[1]), DateTime.Now) } };
 
-        mockSessionStorage.Setup(x => x.RemoveUser(2))
+        mockSessionStorage.Setup(x => x.RemoveUser(UserData.User(fakeUserList[1])))
             .Callback(() => { session.Remove(ssid); });
 
         var user = new Login
@@ -326,22 +333,18 @@ public class AuthControllerTest
     [SetUp]
     public void SetUp()
     {
-        var id = 1;
         var mockCookie = new Mock<IResponseCookies>();
         mockHttpResponse.Setup(foo => foo.Cookies).Returns(mockCookie.Object);
         mockHttpContext.Setup(foo => foo.Response).Returns(mockHttpResponse.Object);
         mockHttpContext.Setup(foo => foo.Request).Returns(mockHttpRequest.Object);
 
         testDbContextCreater = new TestDbContextCreater();
-        testDbContextCreater.Setup(c => 
+        testDbContextCreater.Setup(c =>
         {
             c.Users.AddRange(fakeUserList);
             c.StudentNums.AddRange(fakeStdNumList);
             c.SaveChanges();
         });
-
-        mockAuthorizationManager.Setup(foo => foo.CheckSession(mockHttpRequest.Object, out id))
-            .Returns(Results.Ok());
     }
 
     [TearDown]

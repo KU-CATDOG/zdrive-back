@@ -76,6 +76,8 @@ ID 비밀번호 이름 전화번호 학번 이메일 권한정도(일반사용�
 
 이중 ConnectionStrings에서 DataSource의 위치를 변경해주어야 합니다
 
+> DataSource=app.db => DataSource=/abc/def/app.db
+
 해당 위치에 app.db의 sqlite db 파일이 필요합니다
 
 ```bash

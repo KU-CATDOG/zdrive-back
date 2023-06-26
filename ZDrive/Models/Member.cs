@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace ZDrive.Models;
@@ -24,16 +25,18 @@ public class Member
 
     public string? Description { get; set; } = string.Empty;
 
+    [JsonIgnore]
     public Project Project { get; set; } = null!;
 
     public StudentNum StudentNum { get; set; } = null!;
 }
 
+[Flags]
 public enum Role
 {
-    Programmer,
-    GraphicArtist,
-    SoundArtist,
-    GameDesigner,
-    ProjectManager
+    Programmer = 1 << 0,
+    GraphicArtist = 1 << 1,
+    SoundArtist = 1 << 2,
+    GameDesigner = 1 << 3,
+    ProjectManager = 1 << 4
 }

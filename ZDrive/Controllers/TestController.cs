@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ZDrive.Data;
+using ZDrive.Models;
 
 namespace ZDrive.Controllers;
 
@@ -16,6 +18,7 @@ public class TestController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Anonymous")]
     public void TestGet()
     {
     }

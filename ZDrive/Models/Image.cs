@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace ZDrive.Models;
@@ -15,5 +16,6 @@ public class Image
 
     public int Index { get; set; } = 0;
 
+    [JsonIgnore]
     public Project Project { get; set; } = null!;
 }

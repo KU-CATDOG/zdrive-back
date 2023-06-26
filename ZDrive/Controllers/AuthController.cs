@@ -1,7 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ZDrive.Data;
 using ZDrive.Models;
 using ZDrive.Services;
@@ -13,25 +15,31 @@ namespace ZDrive.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly ZDriveDbContext _context;
-    private readonly IAuthorizationManager _auth;
     private readonly ISessionStorage _session;
 
-    public AuthController(ZDriveDbContext context, IAuthorizationManager auth, ISessionStorage session)
+    public AuthController(ZDriveDbContext context, ISessionStorage session)
     {
         _context = context;
-        _auth = auth;
         _session = session;
     }
 
-    [Route("test")]
+    [Route("check")]
     [HttpGet]
-    public string Test()
+    public async Task<IResult> Test()
     {
-        return GeneratePasswordHash("password", "realtest");
+        var sid = User.FindFirstValue(ClaimTypes.Sid);
+        if (sid == null) return Results.Unauthorized();
+
+        var _user = await _context.Users.FindAsync(int.Parse(sid));
+        if (_user == null) return Results.NotFound();
+
+        var userData = UserData.User(_user);
+        return Results.Ok(userData);
     }
 
     [Route("login")]
     [HttpPost]
+    [AllowAnonymous]
     public async Task<IResult> Login(Login login)
     {
         var _user = await FindUserByStdNumAsync(login.StudentNumber);
@@ -39,20 +47,24 @@ public class AuthController : ControllerBase
         if (GeneratePasswordHash(login.Password, _user.Salt) != _user.PasswordHash) return Results.NotFound();
         if (!_user.IsVerified) return Results.Forbid();
 
-        _session.AddSession(_user.Id, out var ssid);
-
-        Response.Cookies.Append("sessionId", ssid.ToString(), new CookieOptions
+        if (_session.AddSession(UserData.User(_user), out var ssid))
         {
-            SameSite = SameSiteMode.None,
-            Secure = true,
-            HttpOnly = true
-        });
+            Response.Cookies.Append("sessionId", ssid.ToString(), new CookieOptions
+            {
+                SameSite = SameSiteMode.None, // 프로덕션 환경에서는 Lax로 설정해야함
+                Secure = true,
+                HttpOnly = true
+            });
+        }
 
-        return Results.Ok();
+        var userData = UserData.User(_user);
+
+        return Results.Ok(userData);
     }
 
     [Route("logout")]
     [HttpGet]
+    [AllowAnonymous]
     public IResult Logout()
     {
         var ssid = Request.Cookies["sessionId"];
@@ -74,12 +86,13 @@ public class AuthController : ControllerBase
 
     [Route("register")]
     [HttpPost]
+    [AllowAnonymous]
     public async Task<IResult> Register(Registration reg)
     {
         var checkUser = await FindUserByStdNumAsync(reg.StudentNumber);
         if (checkUser != null) return Results.Conflict();
 
-        var checkStudentNum = 
+        var checkStudentNum =
             await _context.StudentNums.FirstOrDefaultAsync(s => s.StudentNumber == reg.StudentNumber);
         if (checkStudentNum == null)
         {
@@ -103,7 +116,9 @@ public class AuthController : ControllerBase
         await _context.Users.AddAsync(newUser);
         await _context.SaveChangesAsync();
 
-        return Results.Created($"/auth/register/{newUser.Id}", newUser);
+        var userData = UserData.User(newUser);
+
+        return Results.Created($"/auth/register/{newUser.Id}", userData);
     }
 
     [Route("remove")]
@@ -112,10 +127,10 @@ public class AuthController : ControllerBase
     {
         var _user = await FindUserByStdNumAsync(login.StudentNumber);
         if (_user == null) return Results.NotFound();
-        if (_user.PasswordHash != GeneratePasswordHash(login.Password, _user.Salt)) 
+        if (_user.PasswordHash != GeneratePasswordHash(login.Password, _user.Salt))
             return Results.NotFound();
 
-        _session.RemoveUser(_user.Id);
+        _session.RemoveUser(UserData.User(_user));
         _context.Users.Remove(_user);
         await _context.SaveChangesAsync();
 

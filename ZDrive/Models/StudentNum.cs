@@ -16,6 +16,7 @@ public class StudentNum
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
 
+    [JsonIgnore]
     public ICollection<Member> Members { get; } = new List<Member>(); // Navigation collection
 
     [JsonIgnore]

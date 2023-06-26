@@ -30,7 +30,7 @@ public class ZDriveDbContext : DbContext
             .HasForeignKey(e => e.ProjectId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<Project>()
             .HasMany(e => e.Members)
             .WithOne(e => e.Project)
@@ -62,8 +62,8 @@ public class ZDriveDbContext : DbContext
         modelBuilder.Entity<Member>()
             .Property(e => e.Role)
             .HasConversion(
-                v => v.ToString(),
-                v => (Role)Enum.Parse(typeof(Role), v)
+                v => (int)v,
+                v => (Role)v
             );
 
         modelBuilder.Entity<User>()
@@ -78,6 +78,13 @@ public class ZDriveDbContext : DbContext
             .HasConversion(
                 v => v.ToString(),
                 v => (Status)Enum.Parse(typeof(Status), v)
+            );
+
+        modelBuilder.Entity<Project>()
+            .Property(e => e.Visibility)
+            .HasConversion(
+                v => v.ToString(),
+                v => (Visibility)Enum.Parse(typeof(Visibility), v)
             );
     }
 }

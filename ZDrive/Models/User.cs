@@ -29,9 +29,8 @@ public class User
 
     public bool IsVerified { get; set; } = false;
 
-    public Authority Authority { get; set; } = Authority.Anonymous;
+    public Authority Authority { get; set; } = Authority.User;
 
-    [JsonIgnore]
     public StudentNum StudentNum { get; set; } = null!;
 
     public ICollection<Project> Projects { get; } = new List<Project>(); // Navigation collection
@@ -39,7 +38,6 @@ public class User
 
 public enum Authority
 {
-    Anonymous,
     User,
     Administer
 }

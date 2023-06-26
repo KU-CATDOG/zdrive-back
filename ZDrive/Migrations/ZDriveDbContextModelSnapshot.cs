@@ -51,9 +51,8 @@ namespace zdrive_back.Migrations
                     b.Property<int>("ProjectId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Role")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("StudentNumber")
                         .IsRequired()
@@ -139,6 +138,10 @@ namespace zdrive_back.Migrations
 
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Visibility")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
