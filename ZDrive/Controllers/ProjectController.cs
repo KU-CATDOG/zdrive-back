@@ -270,12 +270,15 @@ public class ProjectController : ControllerBase
     [HttpPut("image/{src}")]
     public async Task<IResult> UpdateImage(string src, ImageInfo image)
     {
-        var _image = await _context.Images.FindAsync(src);
-        if (_image == null) return Results.NotFound();
-
         var sid = User.FindFirstValue(ClaimTypes.Sid);
         if (sid == null) return Results.Unauthorized();
-        if (sid != _image.ProjectId.ToString()) return Results.Forbid();
+
+        var _image = await _context.Images
+            .Include(m => m.Project)
+            .FirstOrDefaultAsync(m => m.ImageSrc == src);
+
+        if (_image == null) return Results.NotFound();
+        if (sid != _image.Project.UserId.ToString()) return Results.Forbid();
 
         _image.Index = image.Index;
 
@@ -287,12 +290,15 @@ public class ProjectController : ControllerBase
     [HttpDelete("image/{src}")]
     public async Task<IResult> DeleteImage(string src)
     {
-        var _image = await _context.Images.FindAsync(src);
-        if (_image == null) return Results.NotFound();
-
         var sid = User.FindFirstValue(ClaimTypes.Sid);
         if (sid == null) return Results.Unauthorized();
-        if (sid != _image.ProjectId.ToString()) return Results.Forbid();
+
+        var _image = await _context.Images
+            .Include(m => m.Project)
+            .FirstOrDefaultAsync(m => m.ImageSrc == src);
+
+        if (_image == null) return Results.NotFound();
+        if (sid != _image.Project.UserId.ToString()) return Results.Forbid();
 
         _context.Images.Remove(_image);
         await _context.SaveChangesAsync();
