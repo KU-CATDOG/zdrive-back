@@ -8,13 +8,13 @@ public class PeriodTest
     public void Constructor_ValidString_ShouldBeCreatePeriod()
     {
         // Arrange
-        var str = "2023-1";
+        var str = "2020-1";
 
         // Act
         var ret = new Period(str);
 
         // Assert
-        Assert.That(ret.Year, Is.EqualTo(2023));
+        Assert.That(ret.Year, Is.EqualTo(2020));
         Assert.That(ret.Semester, Is.EqualTo(Semester.First));
     }
 
